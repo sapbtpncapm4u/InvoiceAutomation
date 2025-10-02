@@ -24,7 +24,8 @@ sap.ui.define([
                 readOnly: true,
                 showEditBtn: true,
                 showUser: true,
-                showTotalUsageBreakDown: false
+                showTotalUsageBreakDown: false,
+                showTotalUsageBreakDownNew: false
             })
             this.getView().setModel(oModel, "visibilityModel");
 
@@ -229,6 +230,12 @@ sap.ui.define([
                         this.getView().getModel("visibilityModel").setProperty(
                             "/showTotalUsageBreakDown", false
                         );
+
+                        this.getView().getModel("visibilityModel").setProperty(
+                            "/showTotalUsageBreakDownNew", false
+                        );
+
+
 
 
                     });
@@ -440,6 +447,7 @@ sap.ui.define([
             var oView = this.getView();
             var iValid = true;
             var aInvalidFields = [];
+            const thisData = this.initialReadData;
 
             var aFieldsToCheck = [
                 { id: "scanField1", label: "Service Start", type: "date" },
@@ -470,6 +478,12 @@ sap.ui.define([
                         !oControl.getDateValue() :
                         !oControl.getValue();
                     if (bIsEmpty) {
+                        let path = oControl.getBinding("value").getPath();  // e.g., "/UnitofmeasureHuman"
+                        let newPath = path.replace(/Human$/, "Cirah").split("/")[1];
+                        if (!thisData[newPath]) {
+                            oControl.setValueState("None");
+                            return;
+                        }
                         iValid = false;
                         oControl.setValueState("Error");
                         aInvalidFields.push("- " + field.label);
@@ -481,12 +495,17 @@ sap.ui.define([
 
 
             var isTotalChargesSame = true;
-            if (this.getView().getModel("visibilityModel").getProperty("/showTotalUsageBreakDown")) {
+            if (this.getView().getModel("visibilityModel").getProperty("/showTotalUsageBreakDown") || this.getView().getModel("visibilityModel").getProperty("/showTotalUsageBreakDownNew")) {
                 var isTotalChargesSame = this.checkTotalChargesSUM();
             }
 
             if (iValid && isTotalChargesSame) {
-                this.savePostDataAndLogToDB();
+                let statusText = this.getView().byId("statusBox2").getSelectedItem().getText();
+                if (statusText === "Validated" || statusText === "Rejected") {
+                    this.handleValidatedRejectedStatus();
+                } else {
+                    this.savePostDataAndLogToDB();
+                }
             } else {
                 var sMsg;
                 if (!isTotalChargesSame) {
@@ -726,6 +745,17 @@ sap.ui.define([
                 });
             }
             const aLogPayload = buildChangePayload(differences, invoiceUID);
+
+            if (changedData.ProcessStatus !== this.getView().byId("statusBox2").getSelectedItem().getText()) {
+                aLogPayload.push({
+                    Invoice_UID: invoiceUID,
+                    FieldName: "ProcessStatus",
+                    OldValue: changedData.ProcessStatus,
+                    NewValue: this.getView().byId("statusBox2").getSelectedItem().getText(),
+                    ChangeReason: "Fixed Text"
+                })
+            }
+
 
             // Step 4: POst the log to BAckend
             try {
@@ -1166,7 +1196,7 @@ sap.ui.define([
         // },
 
 
-        detailLevelBreakDown: function (sInvoiceUID, refresh) {
+        detailLevelBreakDown: function (sInvoiceUID, refresh, sFieldName) {
             let oModel = this.getView().getModel();  // OData V4 model
             sap.ui.core.BusyIndicator.show(0); // Show immediately
 
@@ -1186,11 +1216,23 @@ sap.ui.define([
                     if (refresh) {
                         return;
                     } else if (!data.length) {
-                        sap.m.MessageToast.show("Total charges Breakdown not avaialble");
+                        if (sFieldName === "totalUsage") {
+                            sap.m.MessageToast.show("Total Usage Breakdown not avaialble");
+                        } else {
+                            sap.m.MessageToast.show("Total Charges Breakdown not avaialble");
+                        }
                     } else {
-                        this.getView().getModel("visibilityModel").setProperty(
-                            "/showTotalUsageBreakDown", true
-                        );
+                        if (sFieldName === "totalUsage") {
+                            this.getView().getModel("visibilityModel").setProperty(
+                                "/showTotalUsageBreakDownNew", true
+                            );
+                        } else {
+                            this.getView().getModel("visibilityModel").setProperty(
+                                "/showTotalUsageBreakDown", true
+                            );
+                        }
+
+
                     }
 
                     /** Panels should be collapsed **/
@@ -1238,7 +1280,7 @@ sap.ui.define([
             let sInvoiceUID = match ? match[1] : null;
 
 
-            this.detailLevelBreakDown(sInvoiceUID);
+            this.detailLevelBreakDown(sInvoiceUID, false, sFieldName);
 
             // if (!this.oBreakdownDialog) {
             //     // Load the fragment (XML) and then embed it into the dialog
@@ -1284,7 +1326,7 @@ sap.ui.define([
             let sInvoiceUID = match ? match[1] : null;
 
 
-            this.fetchFieldLevelLogDetails(sInvoiceUID, sFieldName.split("/")[1]);
+            this.fetchFieldLevelLogDetails(sInvoiceUID, sFieldName);
             //this.fetchFieldLevelLogDetails("EAA41537-3C57-1FD0-9A8A-F4173D2B9E76", "PUE_CAP_HUMAN");
 
             if (!this.oFieldLevelDialog) {
@@ -1544,6 +1586,14 @@ sap.ui.define([
                         this.getView().setModel(oJSONModel, "invoiceData");
 
                         this.initialReadData = oContext.getObject();
+
+                         const status = oContext.getObject().ProcessStatus;
+                        const allowedStatuses = ["Duplicate", "Validated", "Approved", "Rejected"];
+
+                        this.getView().getModel("visibilityModel").setProperty(
+                            "/showEditBtn",
+                            !allowedStatuses.includes(status)
+                        );
 
                         this.readAllFieldLevelLogChangeDetail();
 
@@ -2252,14 +2302,77 @@ sap.ui.define([
                 emphasizedAction: MessageBox.Action.YES,
                 onClose: function (sAction) {
                     if (sAction === MessageBox.Action.YES) {
-                        that.changeProcessStatus(that);
+                        that.savePostDataAndLogToDB();
                     }
                 },
                 // Show the message box as dependent on the view
                 styleClass: that.getView().$().closest(".sapUiSizeCompact").length ? "sapUiSizeCompact" : "",
                 // title: "Quantity Exceeds Planned"
             });
+        },
+
+        hideBreakDown: function () {
+            this.getView().getModel("visibilityModel").setProperty(
+                "/showTotalUsageBreakDownNew", false
+            );
+            this.getView().getModel("visibilityModel").setProperty(
+                "/showTotalUsageBreakDown", false
+            );
+        },
+
+
+        UOMValidator: function (evt) {
+            const inputVal = evt.getSource();
+            const oModel = this.getView().getModel();
+            const sPath = inputVal.getBinding("value").getPath();
+            const sInputValue = inputVal.getValue().trim();
+
+            if (sInputValue.trim() === "") {
+                return;
+            }
+            sap.ui.core.BusyIndicator.show();
+            let sEntitySet = "";
+            let aFilters = [];
+            let sInvalidMsg = "";
+            let sResetValue = "";
+
+            if (sPath === "/CurrencyHuman" || sPath === "CurrencyHuman") {
+                sEntitySet = "/I_CurrencyText";
+                aFilters = [
+                    new sap.ui.model.Filter("Language", sap.ui.model.FilterOperator.EQ, 'EN'),
+                    new sap.ui.model.Filter("Currency", sap.ui.model.FilterOperator.EQ, sInputValue)
+                ];
+                sInvalidMsg = "Invalid Currency";
+                sResetValue = this.initialReadData.CurrencyHuman;
+            } else {
+                sEntitySet = "/I_UnitOfMeasure";
+                aFilters = [
+                    new sap.ui.model.Filter("UnitOfMeasure", sap.ui.model.FilterOperator.EQ, sInputValue)
+                ];
+                sInvalidMsg = "Invalid UOM";
+                sResetValue = this.initialReadData.UnitofmeasureHuman;
+            }
+
+            const oCombinedFilter = new sap.ui.model.Filter(aFilters, true); // AND condition
+
+            oModel.bindList(sEntitySet, undefined, undefined, oCombinedFilter)
+                .requestContexts()
+                .then((aContexts) => {
+                    const aData = aContexts.map(ctx => ctx.getObject());
+                    if (!aData.length) {
+                        sap.m.MessageToast.show(sInvalidMsg);
+                        inputVal.setValue(sResetValue);
+                    }
+                    // You can handle valid case here if needed
+                })
+                .catch((err) => {
+                    console.error("Data load error:", err);
+                })
+                .finally(() => {
+                    sap.ui.core.BusyIndicator.hide();
+                });
         }
+
 
 
 
