@@ -1,0 +1,64 @@
+<core:FragmentDefinition xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page>
+
+        <!-- It has Lazy loading from ODATA v4 Automatically  -->
+        <!-- <SelectDialog title="Unit of Measures" items="{ path: 'valueHelpModel>/UnitsOfMeasure' }" search=".onSearch" confirm=".onSelectVhelp" cancel=".onSelectVhelp">
+            <StandardListItem title="{valueHelpModel>Text} - ( {valueHelpModel>ExternalCode} )" description="" />
+        </SelectDialog>
+
+          <SelectDialog title="Unit of Measures" items="{ path: 'valueHelpModel>/Currencies' }" search=".onSearch" confirm=".onSelectVhelp" cancel=".onSelectVhelp">
+            <StandardListItem title="{valueHelpModel>Text} - ( {valueHelpModel>CurrencyCode} )" description="" />
+        </SelectDialog> -->
+
+
+        <SelectDialog title="Unit of Measures" items="{ path: 'uomModel>/' }" liveChange=".onSearchUOM" confirm=".onSelectVhelp" cancel=".onSelectVhelp">
+            <StandardListItem title="{uomModel>UnitOfMeasure_Text} - ( {uomModel>UnitOfMeasure} )" description="" />
+        </SelectDialog>
+
+        <SelectDialog title="Currencies" items="{ path: 'currencyModel>/' }" liveChange=".onSearchCurrency" confirm=".onSelectVhelp" cancel=".onSelectVhelp">
+            <StandardListItem title="{currencyModel>CurrencyName} - ( {currencyModel>Currency} )" description="" />
+        </SelectDialog>
+
+
+
+
+        <!-- <SelectDialog title="Unit of Measures" items="{ path: '/I_CurrencyText' }" search=".onSearch" confirm=".onSelectVhelp" cancel=".onSelectVhelp">
+            <StandardListItem title="{Currency} - ( {Currency} )" description="" />
+        </SelectDialog> -->
+
+    </Page>
+
+    <!-- It Donot have Lazy loading from ODATA v4  -->
+    <!-- <TableSelectDialog noDataText="No Data Found" title="Unit of Measures" search=".handleSearch" confirm=".handleClose" cancel=".handleClose" multiSelect="false" items="{
+			path : 'valueHelpModel>/UnitsOfMeasure' 
+		}">
+        <ColumnListItem vAlign="Middle">
+            <cells>
+                <ObjectIdentifier title="{valueHelpModel>ExternalCode}" text="{valueHelpModel>Text}" />
+                <Text text="{valueHelpModel>UnitCode}" />
+                <Text text="{Width} x {Depth} x {Height} {DimUnit}" />
+            </cells>
+        </ColumnListItem>
+        <columns>
+            <Column width="12em">
+                <header>
+                    <Text text="Product" />
+                </header>
+            </Column>
+            <Column minScreenWidth="Tablet" demandPopin="true">
+                <header>
+                    <Text text="Supplier" />
+                </header>
+            </Column>
+            <Column minScreenWidth="Desktop" demandPopin="true" hAlign="End">
+                <header>
+                    <Text text="Dimensions" />
+                </header>
+            </Column>
+        </columns>
+    </TableSelectDialog> -->
+
+
+</core:FragmentDefinition>

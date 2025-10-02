@@ -1,0 +1,14 @@
+<core:FragmentDefinition xmlns="sap.m"
+	xmlns:forms="sap.ui.layout.form"
+	xmlns:core="sap.ui.core">
+	<Popover placement="Bottom" resizable="false" initialFocus="close">
+		<forms:SimpleForm layout="ResponsiveGridLayout">
+			<Label design="Bold" text="User" visible="{visibilityModel>/showUser}"/>
+			<Text visible="{visibilityModel>/showUser}"/>
+			<Label design="Bold" text="Time" visible="{visibilityModel>/showUser}"/>
+			<Text visible="{visibilityModel>/showUser}"/>
+			<Label design="Bold" text="User" visible="{= !${visibilityModel>/showUser} }"/>
+			<Text text="{userData>/fullName} ( {userData>/email} )" visible="{= !${visibilityModel>/showUser} }"/>
+		</forms:SimpleForm>
+	</Popover>
+</core:FragmentDefinition>

@@ -1,0 +1,164 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "invoice",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.18.3",
+      "toolsId": "a6e36fb0-2773-48dc-96c0-a00897d4e04c"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/sap/opu/odata4/sap/zps_sb_einvoice/srvd/sap/zps_sd_einvoice/0001/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "4.0",
+          "operationMode": "Server",         
+          "groupId": "updateGroup"
+        }
+      },
+      "valueHelpService": {
+        "uri": "/sap/opu/odata4/sap/zps_sb_einvoice/default/iwbep/common/0001/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }      
+    },
+     "crossNavigation": {
+      "inbounds": {
+        "EnergyInvoice-Manage": {
+          "semanticObject": "EnergyInvoice",
+          "action": "Manage",
+          "title": "Energy Invoice Automation",
+          "subTitle": "",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.133.4",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.comp": {}   
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "invoice.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "valueHelpModel": {
+        "dataSource": "valueHelpService",
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "invoice.view",
+        "async": true
+      },
+      "routes": [
+        {
+          "name": "RouteHome",
+          "pattern": ":?query:",
+          "target": [
+            "TargetHome"
+          ]
+        },
+        {
+          "name": "RouteView1",
+          "pattern": "invoice/{facility}/{id}/{created}/{active}/{cirah}",
+          "target": [
+            "TargetView1"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetHome": {
+          "id": "HomePage",
+          "name": "HomePage"
+        },
+        "TargetView1": {
+          "id": "View1",
+          "name": "Detail"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "invoice.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "invoice"
+  }
+}

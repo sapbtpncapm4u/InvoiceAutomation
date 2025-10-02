@@ -1,0 +1,272 @@
+<mvc:View controllerName="invoice.controller.HomePage"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:uiTable="sap.ui.table"
+    xmlns:svm="sap.ui.comp.smartvariants" displayBlock="true">
+
+
+    <Page showHeader="false">
+        <!-- <subHeader>
+            <OverflowToolbar >
+                <Title text="{i18n>title}" class="spacerTitle"/>
+            </OverflowToolbar>
+        </subHeader> -->
+        <f:DynamicPage headerExpanded="true" headerPinned="true">
+            <f:title>
+                <f:DynamicPageTitle>
+                    <f:heading>
+                        <svm:SmartVariantManagement id="svm" showExecuteOnSelection="true" persistencyKey="myPersKey" showShare="true"/>
+                    </f:heading>
+                    <f:expandedContent>
+                        <Label id="expandedLabel" text="No filters active" />
+                    </f:expandedContent>
+                    <f:snappedContent>
+                        <Label id="snappedLabel" text="No filters active" />
+                    </f:snappedContent>
+                    <f:actions>
+                        <MenuButton icon="sap-icon://action" text="" type="Transparent" tooltip="Share">
+                            <menu>
+                                <Menu>
+                                    <MenuItem text="Send Email" icon="sap-icon://email" press="onShareAsEmail"/>
+                                    <MenuItem text="Save as Tile" icon="sap-icon://add-favorite" press="onSaveAsTile"/>
+                                </Menu>
+                            </menu>
+                        </MenuButton>
+                    </f:actions>
+                </f:DynamicPageTitle>
+            </f:title>
+            <f:header>
+                <f:DynamicPageHeader>
+                    <f:content>
+                        <fb:FilterBar id="filterbar" persistencyKey="myPersKey" useToolbar="false" search=".onSearch" filterChange="onFilterChange" afterVariantLoad=".onAfterVariantLoad">
+                            <fb:filterGroupItems>
+
+                                <fb:FilterGroupItem name="AccountNumberCirah" label="{i18n>AccountNum}" groupName="__basic" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <MultiComboBox id="account" selectionChange=".onSelectionChange" items="{
+                                                        path: '/ZPS_C_EINVOICE',
+                                                        templateShareable: false,
+                                                        parameters: { 
+                                                            $select: 'AccountNumberCirah' 
+                                                        }
+                                                   }">
+                                            <items>
+                                                <core:Item id="filter5" key="{AccountNumberCirah}" text="{AccountNumberCirah}"/>
+                                            </items>
+                                        </MultiComboBox>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+
+                                <fb:FilterGroupItem name="FacilityShortCode" label="{i18n>facilityShortCode}" groupName="__basic" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <MultiComboBox id="fcBox" selectionChange=".onSelectionChange" items="{
+                                                        path: '/ZPS_C_EINVOICE',
+                                                          templateShareable: false,
+                                                        parameters: { $select: 'FacilityShortCode' }
+                                                   }">
+                                            <items>
+                                                <core:Item id="filter1" key="{FacilityShortCode}" text="{FacilityShortCode}" />
+                                            </items>
+                                        </MultiComboBox>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+
+                                 <fb:FilterGroupItem name="ProviderName" label="{i18n>ProviderName}" groupName="__basic" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <MultiComboBox id="provider" selectionChange=".onSelectionChange" items="{
+                                                        path: '/ZPS_C_EINVOICE',
+                                                        templateShareable: false,
+                                                        parameters: { 
+                                                            $select: 'ProviderName'
+                                                        }
+                                                   }">
+                                            <items>
+                                                <core:Item id="filter4" key="{ProviderName}" text="{ProviderName}" />
+                                            </items>
+                                        </MultiComboBox>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+
+                                <fb:FilterGroupItem name="ProcessStatus" label="{i18n>ProcessStatus}" groupName="__basic" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <MultiComboBox id="ProcessStatus" selectionChange=".onSelectionChange" items="{
+                                                        path: '/ZPS_STATUS_VH',
+                                                        templateShareable: false,
+                                                        parameters: { 
+                                                            $select: 'Description'
+                                                        }
+                                                   }">
+                                            <items>
+                                                <core:Item id="filter3" key="{Description}" text="{Description}" />
+                                            </items>
+                                        </MultiComboBox>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+
+                                <fb:FilterGroupItem name="CommodityType" label="{i18n>commodity}" groupName="__basic" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <MultiComboBox id="commoditySelect" selectionChange=".onSelectionChange" items="{
+                                                        path: '/ZPS_C_EINVOICE',
+                                                          templateShareable: false,
+                                                        parameters: { 
+                                                            $select: 'CommodityType'
+                                                        }
+                                                   }">
+                                            <items>
+                                                <core:Item id="filter2" key="{CommodityType}" text="{CommodityType}" />
+                                            </items>
+                                        </MultiComboBox>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+
+
+                               
+
+
+                                <fb:FilterGroupItem name="ServiceMonth" label="{i18n>ServiceMonth}" groupName="__basic" visibleInFilterBar="true">
+                                    <fb:control>
+                                        <MultiComboBox id="month" selectionChange=".onSelectionChange" items="{
+                                                        path: '/ZPS_C_EINVOICE',
+                                                        templateShareable: false,
+                                                        parameters: { 
+                                                            $select: 'ServiceMonth'
+                                                        }
+                                                   }">
+                                            <items>
+                                                <core:Item id="filter6" key="{ServiceMonth}" text="{ServiceMonth}" />
+                                            </items>
+                                        </MultiComboBox>
+                                    </fb:control>
+                                </fb:FilterGroupItem>
+
+
+                            </fb:filterGroupItems>
+                        </fb:FilterBar>
+                    </f:content>
+                </f:DynamicPageHeader>
+            </f:header>
+
+            <f:content>
+
+                <VBox>
+
+                    <OverflowToolbar class="headerBarCSS">
+                        <Title id="titleCount" text="Energy Invoices" class="sapUiTinyMarginBegin"/>
+                        <ToolbarSpacer />
+                        <!-- <Button text="Create" icon="sap-icon://add" press="onCreate" enabled="false"/>
+                        <Button text="Delete" icon="sap-icon://delete" press="removeDuplicate" enabled="false" id="deleteBtn" /> -->
+
+                        <Button id="reprocessBtnFE" text="{i18n>Reprocess}" icon="sap-icon://future" tooltip="Filter" enabled="false" press="onReprocessClick" />
+                        <ToolbarSeparator />
+                        <Button icon="sap-icon://excel-attachment" tooltip="Export to Excel" press="onExport" />
+                    </OverflowToolbar>
+
+                    <Table id="table" sticky="ColumnHeaders" selectionChange="onRowSelection" growing="true" growingThreshold="20" growingScrollToLoad="true" modeAnimationOn="true" mode="MultiSelect" inset="false" items="{ path: '/ZPS_C_EINVOICE' }" class="sapUiLargeMarginBottom">
+                        <columns>
+                            <Column>
+                                <Text text="{i18n>AccountNum}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>facilityShortCode}" />
+                            </Column>
+                            <Column width="18rem">
+                                <Text text="{i18n>ProviderName}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>commodityType}" />
+                            </Column>
+                            <Column width="12rem">
+                                <Text text="{i18n>Month}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>CirahAPITimestamp}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>Status}" />
+                            </Column>
+                        </columns>
+                        <items>
+                            <!-- <ColumnListItem type="{= ${ProcessStatus} === 'Extraction in Progress' || ${ProcessStatus} === 'Extraction Failed' ? 'Inactive' : 'Navigation' }" press="onNavToInvoice"> -->
+                            <!-- <ColumnListItem type="{= ${ProcessStatus} === 'Duplicate' || ${ProcessStatus} === 'Extraction in Progress' || ${ProcessStatus} === 'In Progress' || ${ProcessStatus} === 'Validated' || ${ProcessStatus} === 'Ready for Review' || ${ProcessStatus} === 'Approved' ? 'Navigation' : 'Inactive' }" press="onNavToInvoice"> -->
+                            <ColumnListItem type="{= ${ProcessStatus} === 'Duplicate' || ${ProcessStatus} === 'In Progress' || ${ProcessStatus} === 'Validated' || ${ProcessStatus} === 'Ready for Review' || ${ProcessStatus} === 'Approved' || ${ProcessStatus} === 'Rejected' ? 'Navigation' : 'Inactive' }" press="onNavToInvoice">
+                                <cells>
+                                    <Text text="{AccountNumberCirah}" />
+                                    <Text text="{FacilityShortCode}" />
+                                    <Text text="{ProviderName}" />
+                                    <Text text="{CommodityType}" />
+                                    <Text text="{ServiceMonth}" />
+                                    <Text text="{CreatedOnBLOB}" />
+                                    <Text text="{ProcessStatus}" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+
+                    <!-- <uiTable:Table id="table" rows="{/ZPS_C_EINVOICE}" selectionMode="Single" columnHeaderVisible="true" enableSelectAll="true" selectionBehavior="Row" rowSelectionChange="onNavToInvoice" ariaLabelledBy="tableTitle" visible="true" class="sapUiResponsiveContentPadding" enableColumnReordering="true" enableCellFilter="true" threshold="20" alternateRowColors="true" width="100%">
+
+                        <uiTable:columns>
+
+                            <uiTable:Column sortProperty="FacilityShortCode" filterProperty="FacilityShortCode" width="10rem">
+                                <Label text="{i18n>facilityShortCode}" />
+                                <uiTable:template>
+                                    <Text text="{FacilityShortCode}" />
+                                </uiTable:template>
+                            </uiTable:Column>
+
+                            <uiTable:Column sortProperty="CommodityType" filterProperty="CommodityType" width="10rem">
+                                <Label text="{i18n>commodityType}" />
+                                <uiTable:template>
+                                    <Text text="{CommodityType}" />
+                                </uiTable:template>
+                            </uiTable:Column>
+
+                            <uiTable:Column sortProperty="ProviderName" filterProperty="ProviderName" width="20rem">
+                                <Label text="{i18n>ProviderName}" />
+                                <uiTable:template>
+                                    <Text text="{ProviderName}" />
+                                </uiTable:template>
+                            </uiTable:Column>
+
+                            <uiTable:Column sortProperty="AccountNumberCirah" filterProperty="AccountNumberCirah" width="12rem">
+                                <Label text="{i18n>AccountNum}" />
+                                <uiTable:template>
+                                    <Text text="{AccountNumberCirah}" />
+                                </uiTable:template>
+                            </uiTable:Column>
+
+                            <uiTable:Column sortProperty="ServiceMonth" filterProperty="ServiceMonth" width="10rem">
+                                <Label text="{i18n>ServiceMonth}" />
+                                <uiTable:template>
+                                    <Text text="{ServiceMonth}" />
+                                </uiTable:template>
+                            </uiTable:Column>
+
+                            <uiTable:Column sortProperty="CreatedOnBLOB" filterProperty="CreatedOnBLOB" width="16rem">
+                                <Label text="{i18n>CirahAPITimestamp}" />
+                                <uiTable:template>
+                                    <Text text="{CreatedOnBLOB}" />
+                                </uiTable:template>
+                            </uiTable:Column>
+
+                            <uiTable:Column sortProperty="ProcessStatus" filterProperty="ProcessStatus" width="10rem">
+                                <Label text="{i18n>Status}" />
+                                <uiTable:template>
+                                    <Text text="{ProcessStatus}" />
+                                </uiTable:template>
+                            </uiTable:Column>
+
+                        </uiTable:columns>
+
+                    </uiTable:Table> -->
+
+                </VBox>
+            </f:content>
+        </f:DynamicPage>
+
+
+
+    </Page>
+</mvc:View>

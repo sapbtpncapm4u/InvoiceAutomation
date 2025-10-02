@@ -1,0 +1,24 @@
+{
+  "generationParameters": {
+    "generationDate": "Mon Jul 28 2025 08:42:22 GMT+0000 (Coordinated Universal Time)",
+    "generatorPlatform": "SAP Business Application Studio",
+    "serviceType": "SAP System (ABAP Environment on SAP Business Technology Platform)",
+    "metadataFilename": "",
+    "serviceUrl": "https://2a62d9a8-fb91-43e7-9a6a-d41d3795a555.abap.eu20.hana.ondemand.com/sap/opu/odata4/sap/zps_sb_einvoice/srvd/sap/zps_sd_einvoice/0001/",
+    "appName": "invoice",
+    "appTitle": "Custom Invoice App",
+    "appDescription": "An SAP Fiori application for viewing Invoice ",
+    "appNamespace": "",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.133.4",
+    "enableCodeAssist": false,
+    "enableEslint": false,
+    "enableTypeScript": false,
+    "showMockDataInfo": true,
+    "generatorVersion": "1.18.3",
+    "template": "Basic V4",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [],
+    "launchText": "To launch the generated application, run the following from the generated application root folder:\n\n```\n    npm start\n```"
+  }
+}

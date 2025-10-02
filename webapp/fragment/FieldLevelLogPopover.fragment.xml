@@ -1,0 +1,36 @@
+<core:FragmentDefinition xmlns="sap.m"
+	xmlns:forms="sap.ui.layout.form"
+	xmlns:core="sap.ui.core">
+	<Popover placement="Left" resizable="true" initialFocus="close">
+		<VBox items="{fieldLogModel>/}" class="sapUiTinyMarginTopBottom sapUiTinyMarginEnd">
+
+			<Panel headerText="{path: 'fieldLogModel>ChangedAt',formatter: '.formatISOToLocalDateTime'}" expandable="true" expanded="false">
+
+				<HBox wrap="Wrap" justifyContent="Start" fitContainer="true">
+					
+					<VBox width="33%">
+						<Label text="Old Value" design="Bold"/>
+						<Text text="{fieldLogModel>OldValue} - {fieldLogModel>ChangeSeq}" />
+					</VBox>
+
+					
+					<VBox width="33%">
+						<Label text="New Value" design="Bold"/>
+						<Text text="{fieldLogModel>NewValue}" />
+					</VBox>
+
+					<VBox width="33%">
+						<Label text="Changed By" design="Bold"/>
+						<Text text="{= ${fieldLogModel>ChangedByUname} + ' (' + ${fieldLogModel>ChangedBy} + ')' }" />
+					</VBox>
+				</HBox>
+
+			</Panel>
+		</VBox>
+
+
+	</Popover>
+</core:FragmentDefinition>
+
+
+

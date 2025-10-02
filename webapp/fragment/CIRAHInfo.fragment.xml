@@ -1,0 +1,6 @@
+<core:FragmentDefinition xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Popover placement="Right" resizable="false" initialFocus="close">
+		<MessageStrip showIcon="true" showCloseButton="false"/>
+	</Popover>
+</core:FragmentDefinition>

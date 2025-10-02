@@ -1,0 +1,30 @@
+/* Enter your custom styles here */
+
+.spacerTitle {
+    padding-left: 2.5%;
+}
+
+.blueText {
+    color: #0064d9;
+}
+
+
+.headerBarCSS {
+    height: 2.75rem !important;
+}
+
+.TitleBarCSS {
+    height: 2.75rem !important;
+}
+
+
+.sapUiFormCLSmallColumns .sapUiFormCLElement>.sapUiFormCLCellsS6 {
+    width: 99% !important;
+}
+
+
+.panelLableCSS {
+    /* color: #158fcf !important; */
+    color: #0064d9 !important;
+    font-size: small;
+}

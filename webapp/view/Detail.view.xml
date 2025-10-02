@@ -1,0 +1,865 @@
+<mvc:View xmlns:table="sap.ui.table"
+    xmlns:unified="sap.ui.unified" controllerName="invoice.controller.Detail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:l="sap.ui.layout"
+    xmlns:ux="sap.uxap"
+    xmlns:core="sap.ui.core"
+    xmlns:forms="sap.ui.layout.form"
+    xmlns:vbm="sap.ui.vbm"
+    xmlns="sap.m">
+
+    <Page id="page" showHeader="false">
+        <!-- <subHeader>
+            <OverflowToolbar >
+                <Title text="{i18n>title}" class="spacerTitle blueText"/>
+            </OverflowToolbar>
+        </subHeader> -->
+
+
+        <!-- <OverflowToolbar class="headerBarCSS">
+            <Title text="HEADER" wrapping="true" level="H4"/>
+            <ToolbarSpacer />
+            <Button text="Create" icon="sap-icon://add" press="onCreate" />
+            <ToolbarSeparator />
+            <Button text="Edit" type="Emphasized"/>
+            <Button type="Transparent" text="Delete"/>
+            <Button type="Transparent" text="Copy"/>
+            <OverflowToolbarButton icon="sap-icon://action" type="Transparent" text="Share" tooltip="action"/>
+        </OverflowToolbar> -->
+
+
+        <l:ResponsiveSplitter defaultPane="default">
+            <l:PaneContainer >
+                <l:PaneContainer orientation="Vertical">
+                    <l:SplitPane>
+                        <l:layoutData>
+                            <l:SplitterLayoutData size="45%"/>
+                        </l:layoutData>
+
+                        <ux:ObjectPageLayout id="ObjectPageLayout" showTitleInHeaderContent="true" upperCaseAnchorBar="false">
+                            <!-- Header Title -->
+                            <ux:headerTitle>
+                                <ux:ObjectPageDynamicHeaderTitle>
+                                    <ux:expandedContent>
+                                        <OverflowToolbar>
+                                            <Button type="Back" press="activateBackButtonTracking"/>
+                                            <Title text="{i18n>title}" wrapping="true" level="H4" class="blueText"/>
+                                            <ToolbarSeparator/>
+                                            <OverflowToolbarButton id="lockIcon" type="Transparent" visible="{visibilityModel>/showEditBtn}" press="onLockedBtnPress"/>
+                                        </OverflowToolbar>
+                                        <forms:SimpleForm layout="ResponsiveGridLayout" labelSpanM="3" labelSpanS="5">
+
+                                            <Label design="Bold" text="{i18n>facilityCode}" />
+                                            <Title text="{invoiceData>/FacilityShortCode}" />
+                                            <Label design="Bold" text="{i18n>CreatedOnBLOB}" />
+                                            <Text text="{ path: 'invoiceData>/CreatedOnBLOB', formatter: '.formatter.formatDateTime' }" />
+                                            <Label design="Bold" text="{i18n>ILink}"/>
+                                            <Link text="File" icon="sap-icon://pdf-attachment" target="_blank" href="{pdfData>/Source}"/>
+
+                                        </forms:SimpleForm>
+                                    </ux:expandedContent>
+
+                                    <!-- <ux:actions>
+                                        <Button text="Print" type="Emphasized" icon="sap-icon://print" />
+                                        <Button text="Download" icon="sap-icon://download" />
+                                    </ux:actions> -->
+                                </ux:ObjectPageDynamicHeaderTitle>
+                            </ux:headerTitle>
+
+
+                            <!-- <ScrollContainer height="100%" width="60%" horizontal="true" vertical="true">
+                                <FlexBox direction="Column" renderType="Div" class="sapUiSmallMargin">
+                                    <PDFViewer source="{pdfData>/Source}" isTrustedSource="true" title="{pdfData>/Title}">
+                                        <layoutData>
+                                            <FlexItemData growFactor="1" />
+                                        </layoutData>
+                                    </PDFViewer>
+                                </FlexBox>
+                            </ScrollContainer> -->
+
+                            <ux:sections>
+                                <!-- Line Items Section -->
+                                <ux:ObjectPageSection showTitle="false">
+                                    <ux:subSections>
+                                        <ux:ObjectPageSubSection showTitle="false">
+                                            <ux:blocks>
+
+                                                <!-- <VBox alignContent="Center" alignItems="Stretch">
+                                                    <PDFViewer source="{pdfData>/Source}" isTrustedSource="true" title="{pdfData>/Title}"/>
+                                                </VBox> -->
+                                                <VBox>
+                                                    <Title text="{pdfData>/hardcodedTex}" class="sapUiTinyMarginBottom"/>
+                                                    <VBox alignContent="Stretch" alignItems="Stretch" renderType="Bare" class="sapUiTinyMargin">
+                                                        <!-- <PDFViewer source="{pdfData>/Source}" title="{pdfData>/hardcodedTex}" isTrustedSource="true" width="100%" height="100%" /> -->
+
+                                                        <!-- <core:HTML id="pdfIframe" content="&lt;iframe name='pdfFrame' width='100%' height='600px' style='border:none;'&gt;&lt;/iframe&gt;" /> -->
+
+                                                        <!-- <core:HTML xmlns:core="sap.ui.core" content="&lt;iframe src='https://microsoft.sharepoint.com/teams/Constellation242/_layouts/15/embed.aspx?UniqueId=25ae572d-b06f-4e48-add3-8ea8f6936427' height='550' frameborder='0' scrolling='no' allowfullscreen title='DummyTest'&gt;&lt;/iframe&gt;" /> -->
+
+                                                        <core:HTML id="iframeHtml"/>
+
+                                                    </VBox>
+                                                </VBox>
+
+
+                                            </ux:blocks>
+                                        </ux:ObjectPageSubSection>
+                                    </ux:subSections>
+                                </ux:ObjectPageSection>
+                            </ux:sections>
+
+                        </ux:ObjectPageLayout>
+
+                    </l:SplitPane>
+                </l:PaneContainer>
+                <l:SplitPane >
+                    <l:layoutData>
+                        <l:SplitterLayoutData size="55%"/>
+                    </l:layoutData>
+
+                    <!-- <Page showHeader="true" title="Basic Invoice Information">
+                        <ux:ObjectPageLayout>
+                            <ux:sections>
+                                <ux:ObjectPageSection showTitle="false">
+                                    <ux:subSections>
+                                        <ux:ObjectPageSubSection showTitle="false" titleUppercase="false">
+                                            <ux:blocks>
+                                                <forms:SimpleForm editable="false" layout="ColumnLayout">
+
+                                                    <Label text="Evangelize the UI framework across the company" />
+                                                    <Text text="4 days overdue Cascaded" />
+
+                                                    <Label text="Get trained in development management direction" />
+                                                    <Text text="Due Nov 21" />
+
+                                                    <Label text="Mentor junior developers" />
+                                                    <Text text="Due Dec 31 Cascaded" />
+
+                                                </forms:SimpleForm>
+                                            </ux:blocks>
+                                        </ux:ObjectPageSubSection>
+                                    </ux:subSections>
+                                </ux:ObjectPageSection>
+                            </ux:sections>
+                        </ux:ObjectPageLayout>
+                    </Page> -->
+
+                    <VBox alignContent="Center" alignItems="Stretch" width="100%">
+
+                        <OverflowToolbar class="TitleBarCSS">
+                            <Title text="{i18n>title2}" wrapping="true" level="H4" class="blueText sapUiTinyMarginBegin"/>
+                            <ToolbarSpacer />
+                            <ToolbarSeparator />
+                            <Button id="editBtn" text="Edit" type="Emphasized" press="onEditPress" visible="{visibilityModel>/showEditBtn}"/>
+                        </OverflowToolbar>
+
+                        <!-- <Panel expandable="false" expanded="true" width="100%" class="blueText">
+                            <forms:SimpleForm editable="{= ${visibilityModel>/editOnly} ? true : false }" layout="ColumnLayout" columnsM="3" columnsL="3" columnsXL="3">
+                                <Text id="textResult" visible="false"/>
+
+                                <Label text="{i18n>facilityShortCode}" />
+                                <Text text="{invoiceData>/FacilityShortCode}" visible="{visibilityModel>/readOnly}"/>
+                                <Text id="facilityCode" text="{invoiceData>/FacilityShortCode}" visible="{visibilityModel>/editOnly}"/>
+                                <Text id="uniqId" text="{invoiceData>/Uniqueidentifier}" visible="false"/>
+
+
+
+                                <Label text="{i18n>ServiceMonth}" />
+                                <Text text="{invoiceData>/ServiceMonth}" visible="{visibilityModel>/readOnly}"/>
+                                <ComboBox items="{
+                                        path: 'monthModel>/months'
+                                    }" selectedKey="{invoiceData>/ServiceMonth}" placeholder="Choose a month" visible="{visibilityModel>/editOnly}">
+                                    <core:ListItem key="{monthModel>key}" text="{monthModel>name}" />
+                                </ComboBox>
+
+
+                                <Label text="{i18n>ExtractedDate}" />
+                                <Text text="{invoiceData>/ExtractedDate}" visible="{visibilityModel>/readOnly}"/>
+                                <DatePicker id="basicField3" value="{invoiceData>/ExtractedDate}" displayFormat="dd-MM-YYYY" valueFormat="dd-MM-YYYY" visible="{visibilityModel>/editOnly}"/>
+
+
+                                <Label text="{i18n>Source}" />
+                                <Text text="{invoiceData>/Source}" visible="{visibilityModel>/readOnly}" />
+                                <Input id="basicField4" value="{invoiceData>/Source}" visible="{visibilityModel>/editOnly}"/>
+
+                                <Label text="{i18n>fy}" />
+                                <Text text="{invoiceData>/FiscalYearOnly}" visible="{visibilityModel>/readOnly}"/>
+                            
+                                <DatePicker id="basicField5" value="{
+                                        'path': 'invoiceData>/FiscalYear',
+                                        'type': 'sap.ui.model.type.Date',
+                                        'formatOptions': {
+                                            'pattern': 'yyyy'
+                                        }
+                                    }" change="handleChange" visible="{visibilityModel>/editOnly}"/>
+
+                                <Label text="{i18n>commodityType}" />
+                                <Text text="{invoiceData>/CommodityType}" visible="{visibilityModel>/readOnly}"/>
+                                <Input id="basicField6" value="{invoiceData>/CommodityType}" visible="{visibilityModel>/editOnly}"/>
+
+
+                                <Label text="{i18n>ProviderName}" />
+                                <Text text="{invoiceData>/ProviderName}" visible="{visibilityModel>/readOnly}"/>
+                                <Input id="basicField7" value="{invoiceData>/ProviderName}" visible="{visibilityModel>/editOnly}"/>
+
+
+                                <Label text="{i18n>DaysBilled}" />
+                                <Text text="{invoiceData>/Daysbilled}" visible="{visibilityModel>/readOnly}"/>
+                                <Input id="basicField8" value="{invoiceData>/Daysbilled}" visible="{visibilityModel>/editOnly}"/>
+
+                                <Label text="{i18n>PONumber}" />
+                                <Text text="{invoiceData>/PoNumber}" visible="{visibilityModel>/readOnly}"/>
+                                <Input id="basicField9" value="{invoiceData>/PoNumber}" visible="{visibilityModel>/editOnly}"/>
+
+                                <Label text="{i18n>MSInvoiceNumber}" />
+                                <Text text="{invoiceData>/MsInvoiceNumber}" visible="{visibilityModel>/readOnly}"/>
+                                <Input id="basicField10" value="{invoiceData>/MsInvoiceNumber}" visible="{visibilityModel>/editOnly}"/>
+
+                                <Label text="{i18n>InvoiceType}" />
+                                <Text text="{invoiceData>/InvoiceType}" visible="{visibilityModel>/readOnly}"/>
+                                <Input id="basicField11" value="{invoiceData>/InvoiceType}" visible="{visibilityModel>/editOnly}"/>
+
+
+                            </forms:SimpleForm>
+                        </Panel> -->
+
+
+                        <Panel expandable="false" expanded="true" width="100%" class="blueText">
+                            <!-- Hidden Texts -->
+                            <Text id="textResult" visible="false" />
+                            <Text id="uniqId" text="{invoiceData>/Uniqueidentifier}" visible="false" />
+
+                            <HBox width="100%" justifyContent="SpaceBetween" wrap="NoWrap" renderType="Bare" class="sapUiSmallMarginTop">
+
+                                <!-- Column 1 -->
+                                <VBox width="32%" class="sapUiTinyMarginBeginEnd">
+                                    <Label text="{i18n>facilityShortCode}" />
+                                    <Text text="{invoiceData>/FacilityShortCode}" visible="{visibilityModel>/readOnly}" />
+                                    <!-- <Text id="facilityCode" text="{invoiceData>/FacilityShortCode}" visible="{visibilityModel>/editOnly}" /> -->
+                                    <Input id="facilityCode" value="{invoiceData>/FacilityShortCode}" editable="false" visible="{visibilityModel>/editOnly}" />
+
+                                    <Label text="{i18n>ServiceMonth}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/ServiceMonth}" visible="{visibilityModel>/readOnly}" />
+                                    <Select id="basicField2" items="{ path: 'monthModel>/months' }" selectedKey="{invoiceData>/ServiceMonth}" visible="{visibilityModel>/editOnly}" width="100%">
+                                        <core:ListItem key="{monthModel>key}" text="{monthModel>name}" />
+                                    </Select>
+
+                                    <Label text="{i18n>ExtractedDate}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/ExtractedDate}" visible="{visibilityModel>/readOnly}" />
+                                    <DatePicker id="basicField3" value="{invoiceData>/ExtractedDate}" displayFormat="yyyy-MM-dd" valueFormat="yyyy-MM-dd" visible="{visibilityModel>/editOnly}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onDateValidation" />
+
+                                    <Label text="{i18n>MSInvoiceNumber}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/MsInvoiceNumber}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField10" value="{invoiceData>/MsInvoiceNumber}" change="onHumanValueValidationForBasicInfo" visible="{visibilityModel>/editOnly}"/>
+                                </VBox>
+
+                                <!-- Column 2 -->
+                                <VBox width="32%" class="sapUiTinyMarginBottom sapUiTinyMarginBeginEnd">
+                                    <Label text="{i18n>Source}" />
+                                    <Text text="{invoiceData>/Source}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField4" value="{invoiceData>/Source}" visible="{visibilityModel>/editOnly}" />
+
+                                    <Label text="{i18n>fy}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/FiscalYearOnly}" visible="{visibilityModel>/readOnly}" />
+                                    <DatePicker id="basicField5" value="{
+                                        path: 'invoiceData>/FiscalYear',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: { pattern: 'yyyy' },
+                                        constraints: { nullable: true }
+                                    }" change="handleChange" visible="{visibilityModel>/editOnly}" />
+
+                                    <Label text="{i18n>commodityType}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/CommodityType}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField6" value="{invoiceData>/CommodityType}" visible="{visibilityModel>/editOnly}" />
+
+                                    <Label text="{i18n>InvoiceType}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/InvoiceType}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField11" value="{invoiceData>/InvoiceType}" change="onHumanValueValidationForBasicInfo" visible="{visibilityModel>/editOnly}" />
+                                </VBox>
+
+                                <!-- Column 3 -->
+                                <VBox width="32%" class="sapUiTinyMarginBeginEnd">
+                                    <Label text="{i18n>ProviderName}" />
+                                    <Text text="{invoiceData>/ProviderName}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField7" value="{invoiceData>/ProviderName}" visible="{visibilityModel>/editOnly}" width="97%"/>
+
+                                    <Label text="{i18n>DaysBilled}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/Daysbilled}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField8" value="{invoiceData>/Daysbilled}" visible="{visibilityModel>/editOnly}" width="97%" type="Number"/>
+
+                                    <Label text="{i18n>PONumber}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/PoNumber}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField9" value="{invoiceData>/PoNumber}" visible="{visibilityModel>/editOnly}" width="97%" change="onHumanValueValidationForBasicInfo" />
+
+                                    <Label text="{i18n>Region}" class="sapUiSmallMarginTop" />
+                                    <Text text="{invoiceData>/Region}" visible="{visibilityModel>/readOnly}" />
+                                    <Input id="basicField12" value="{invoiceData>/Region}" visible="{visibilityModel>/editOnly}" width="97%"/>
+                                </VBox>
+
+                            </HBox>
+                        </Panel>
+
+
+
+                        <OverflowToolbar >
+                            <Title text="{i18n>group1}" wrapping="true" level="H4" class="blueText sapUiTinyMarginBegin"/>
+                        </OverflowToolbar>
+                        <Panel expandable="false" expanded="true" width="100%" class="sapUiTinyMarginBottom">
+                            <Table inset="false" mode="None" autoPopinMode="true" growing="false">
+                                <columns>
+                                    <Column minScreenWidth="Tablet" width="26%">
+                                        <Text text="Field" />
+                                    </Column>
+                                    <Column demandPopin="true" minScreenWidth="Tablet" width="30%">
+                                        <Text text="CIRAH" />
+                                    </Column>
+                                    <Column demandPopin="true" minScreenWidth="Tablet" visible="{visibilityModel>/readOnly}">
+                                        <Text text="HUMAN" />
+                                    </Column>
+                                    <Column demandPopin="true" minScreenWidth="Tablet" visible="{visibilityModel>/editOnly}">
+                                        <Text text="HUMAN" />
+                                    </Column>
+
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>serviceStart}" />
+                                            <HBox>
+                                                <Button width="200px" icon="sap-icon://information" text="{invoiceData>/ServiceStartCirah}" type="{= ${invoiceData>/ServStartCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/ServStartCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{ path: 'invoiceData>/ServiceStartHuman', formatter: '.formatShortDateToISO' }" /> -->
+                                                <Button id="Btn1" width="200px" text="{ path: 'invoiceData>/ServiceStartHuman', formatter: '.formatShortDateToISO' }" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <DatePicker id="scanField1" value="{ path: 'invoiceData>/ServiceStartHuman' }" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" displayFormat="yyyy-MM-dd" valueFormat="yyyy-MM-dd" change="onDateValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </DatePicker>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiTinyMarginBegin" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>serviceEnd}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/ServiceEndCirah}" type="{= ${invoiceData>/ServEndCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/ServEndCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{ path: 'invoiceData>/ServiceEndHuman', formatter: '.formatShortDateToISO' }" /> -->
+                                                <Button id="Btn2" width="200px" text="{ path: 'invoiceData>/ServiceEndHuman', formatter: '.formatShortDateToISO' }" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <DatePicker id="scanField2" value="{invoiceData>/ServiceEndHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" displayFormat="yyyy-MM-dd" valueFormat="yyyy-MM-dd" change="onDateValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </DatePicker>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>dueDate}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/InvoiceDueDateCirah}" type="{= ${invoiceData>/InvoiceDueDateCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/InvoiceDueDateCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{ path: 'invoiceData>/InvoiceDueDateHuman', formatter: '.formatShortDateToISO' }" /> -->
+                                                <Button id="Btn3" width="200px" text="{ path: 'invoiceData>/InvoiceDueDateHuman', formatter: '.formatShortDateToISO' }" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <DatePicker id="scanField3" value="{invoiceData>/InvoiceDueDateHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" displayFormat="yyyy-MM-dd" valueFormat="yyyy-MM-dd" change="onDateValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </DatePicker>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>accountNumber}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/AccountNumberCirah}" type="{= ${invoiceData>/AccNumCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/AccNumCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{ path: 'invoiceData>/AccountNumberHuman', formatter: '.formatShortDateToISO' }" /> -->
+                                                <Button id="Btn4" width="200px" text="{ path: 'invoiceData>/AccountNumberHuman', formatter: '.formatShortDateToISO' }" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField4" value="{invoiceData>/AccountNumberHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidationForString">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>vendorInvoice}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/VendorInvoiceNumberCirah}" type="{= ${invoiceData>/VinCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/VinCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{ path: 'invoiceData>/VendorInvoiceNumberHuman', formatter: '.formatShortDateToISO' }" /> -->
+                                                <Button id="Btn5" width="200px" text="{ path: 'invoiceData>/VendorInvoiceNumberHuman', formatter: '.formatShortDateToISO' }" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField5" value="{invoiceData>/VendorInvoiceNumberHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidationForString">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                   
+                                    <!-- <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>totalUsageOH}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" text="{invoiceData>/CommodityTotalUsageOhCirah} {invoiceData>/UnitofmeasureCirah}" type="{= ${invoiceData>/CommTotUsgOhCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/CommTotUsgOhCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Text text="{invoiceData>/CommodityTotalUsageOhHuman} {invoiceData>/UnitofmeasureHuman}" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField7" type="Number" value="{invoiceData>/CommodityTotalUsageOhHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Input id="uom7" value="{invoiceData>/UnitofmeasureHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem> -->
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>pueFactoredUsage}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/PueFactoredUsageCirah} {invoiceData>/UnitofmeasureCirah}" type="{= ${invoiceData>/PueFactUsgCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/PueFactUsgCirah_reasonsmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{invoiceData>/PueFactoredUsageHuman} {invoiceData>/UnitofmeasureHuman}" /> -->
+                                                <Button id="Btn7" width="200px" text="{invoiceData>/PueFactoredUsageHuman} {invoiceData>/UnitofmeasureHuman}" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField8" type="Number" value="{invoiceData>/PueFactoredUsageHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Input id="uom8" value="{invoiceData>/UnitofmeasureHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>pueActual}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/PueActualCirah} {invoiceData>/UnitofmeasureCirah}" type="{= ${invoiceData>/PueActCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/PueActCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{invoiceData>/PueActualHuman} {invoiceData>/UnitofmeasureHuman}" /> -->
+                                                <Button id="Btn8" width="200px" text="{invoiceData>/PueActualHuman} {invoiceData>/UnitofmeasureHuman}" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField9" type="Number" value="{invoiceData>/PueActualHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Input id="uom9" value="{invoiceData>/UnitofmeasureHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>pueCap}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/PueCapCirah} {invoiceData>/UnitofmeasureCirah}" type="{= ${invoiceData>/PueCapCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/PueCapCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{invoiceData>/PueCapHuman} {invoiceData>/UnitofmeasureHuman}" /> -->
+                                                <Button id="Btn9" width="200px" text="{invoiceData>/PueCapHuman} {invoiceData>/UnitofmeasureHuman}" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField10" type="Number" value="{invoiceData>/PueCapHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Input id="uom10" value="{invoiceData>/UnitofmeasureHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <!-- <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>totalUsageUnits}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" text="{invoiceData>/TotalUsageUnitsCirah} {invoiceData>/UnitofmeasureCirah}" type="{= ${invoiceData>/TotUsgUniCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/TotUsgUniCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Text text="{invoiceData>/TotalUsageUnitsHuman} {invoiceData>/UnitofmeasureHuman}" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField11" type="Number" value="{invoiceData>/TotalUsageUnitsHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Input id="uom11" value="{invoiceData>/UnitofmeasureHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem> -->
+                                     <ColumnListItem>
+                                        <cells>
+                                            <Label text="{i18n>totalUsage}" />
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/CommodityTotalUsageCirah} {invoiceData>/UnitofmeasureCirah}" type="{= ${invoiceData>/CommTotUsgCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/CommTotUsgCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{invoiceData>/CommodityTotalUsageHuman} {invoiceData>/UnitofmeasureHuman}" /> -->
+                                                <Button id="Btn6" width="200px" text="{invoiceData>/CommodityTotalUsageHuman} {invoiceData>/UnitofmeasureHuman}" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField6" type="Number" value="{invoiceData>/CommodityTotalUsageHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onHumanValueValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Input id="uomInput" value="{invoiceData>/UnitofmeasureHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog"/>
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem>
+                                        <cells>
+
+                                            <!-- <Label text="{i18n>totalCharges}" /> -->
+
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Label text="{i18n>totalCharges}" />
+                                                <Button icon="sap-icon://crm-service-manager" tooltip="View Breakdown" class="sapUiSmallMarginEnd" type="Ghost" press="openTotalUsageDetailedBreakdownDialog" />
+                                            </HBox>
+
+                                            <HBox>
+                                                <Button icon="sap-icon://information" width="200px" text="{invoiceData>/CommodityTotalChargesCirah} {invoiceData>/CurrencyCirah}" type="{= ${invoiceData>/CommTotChagsCirah_reasonstat} === 'Valid' ? 'Accept' : 'Attention' }" press=".handlePopoverPress"/>
+                                                <Text text="{invoiceData>/CommTotChagsCirah_reasonmsg}" visible="false"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <!-- <Text text="{invoiceData>/CommodityTotalChargesHuman} {invoiceData>/CurrencyHuman}" /> -->
+                                                <Button id="Btn10" width="200px" text="{invoiceData>/CommodityTotalChargesHuman} {invoiceData>/CurrencyHuman}" type="Accept" icon="sap-icon://user-edit"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" class="sapUiSmallMarginEnd" type="Neutral" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                            <HBox alignItems="Center" justifyContent="SpaceBetween" width="100%">
+                                                <Input id="scanField12" type="Number" value="{invoiceData>/CommodityTotalChargesHuman}" valueState="{= ${invoiceData>/FacilityShortCode} ? 'None' : 'None' }" change="onChargesValueValidation">
+                                                    <layoutData>
+                                                        <FlexItemData growFactor="1" />
+                                                    </layoutData>
+                                                </Input>
+                                                <Input id="currencyInput" value="{invoiceData>/CurrencyHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" />
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+
+                                </items>
+                            </Table>
+
+
+
+                            <!-- <Text text="Breakdown data not available!" visible="{ path: 'InvTotUsgBreakDownModel>/', formatter: '.formatNoDataVisible' }" class="sapUiResponsiveMargin" />
+                            <VBox items="{InvTotUsgBreakDownModel>/}" class="sapUiTinyMarginTopBottom sapUiTinyMarginEnd">
+                                <Panel expandable="true" expanded="false">
+
+                                    <headerToolbar>
+                                        <OverflowToolbar>
+                                            <Label text="{InvTotUsgBreakDownModel>ColocationName}" class="panelLableCSS"/>
+                                            <ToolbarSpacer />
+                                            <Text text="" visible="false"/>
+                                        </OverflowToolbar>
+                                    </headerToolbar>
+
+                                    <HBox wrap="Wrap" justifyContent="Start" fitContainer="true">
+                                        <VBox class="sapUiMediumMarginEnd">
+                                            <Label text="Invoice Total Charge" design="Bold"/>
+                                            <Text text="{InvTotUsgBreakDownModel>InvoiceTotalCharge} {InvTotUsgBreakDownModel>Currency}" />
+                                        </VBox>
+
+                                    </HBox>
+                                </Panel>
+                            </VBox> -->
+
+
+
+                            <!-- <Text text="Breakdown data not available!" visible="!{visibilityModel>/showTotalUsageBreakDown}" class="sapUiResponsiveMargin" /> -->
+
+                            <Table id="idInvoiceBreakdownTable" visible="{visibilityModel>/showTotalUsageBreakDown}" items="{InvTotUsgBreakDownModel>/}" width="90%" class="sapUiTinyMarginTopBottom sapUiTinyMarginEnd sapUiMediumMarginBegin" inset="false" growing="true" growingScrollToLoad="true" mode="None">
+
+                                <columns>
+                                    <Column>
+                                        <Text text="Colocation Name" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Invoice Total Charge CIRAH"/>
+                                    </Column>
+                                    <Column>
+                                        <Text text="Invoice Total Charge Human"/>
+                                    </Column>
+
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{InvTotUsgBreakDownModel>ColocationName}" />
+                                            <Text text="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeCIRAH} + ' ' + ${InvTotUsgBreakDownModel>CurrencyCirah} }"/>
+                                            <HBox>
+                                                <Text text="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeHUMAN}  + ' ' + ${InvTotUsgBreakDownModel>CurrencyHuman} }" visible="{visibilityModel>/readOnly}"/>
+                                                <Input value="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeHUMAN} }" visible="{visibilityModel>/editOnly}"/>
+                                                <Input value="{InvTotUsgBreakDownModel>CurrencyHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" visible="{visibilityModel>/editOnly}"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" visible="{visibilityModel>/editOnly}"/>
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+
+                            </Table>
+
+
+
+
+
+
+
+
+
+                        </Panel>
+
+                        <!-- <Panel expandable="false" expanded="true" headerText="CIRAH" width="100%">
+                            <forms:SimpleForm editable="false" layout="ColumnLayout">
+
+                                <Label text="{i18n>serviceEnd}" />
+                                <Input value="Jul 17, 2030" editable="false" />
+
+                                <Label text="{i18n>dueDate}" />
+                                <DatePicker value="Jul 29, 2025" editable="false" />
+
+                                <Label text="{i18n>accountNumber}" />
+                                <DatePicker value="626264151215" editable="false" />
+
+                                <Label text="{i18n>vendorInvoice}" />
+                                <Input value="8484684" editable="false" />
+
+                                <Label text="{i18n>totalUsage}" />
+                                <Input value="62,525.000 KWH" editable="false" />
+
+                                <Label text="{i18n>totalUsageOH}" />
+                                <Input value="5,545.000 KWH" editable="false" />
+
+                                <Label text="{i18n>pueFactoredUsage}" />
+                                <Input value="151.000 KWH" editable="false" />
+
+                                <Label text="{i18n>pueActual}" />
+                                <Input value="84.000 KWH" editable="false" />
+
+                                <Label text="{i18n>pueCap}" />
+                                <Input value="551.000 KWH" editable="false" />
+
+                                <Label text="{i18n>totalUsageUnits}" />
+                                <Input value="666.000 KWH" editable="false" />
+
+                                <Label text="{i18n>totalCharges}" />
+                                <Input value="25,695.00 USD" editable="false" />
+
+
+                            </forms:SimpleForm>
+                        </Panel>
+
+                        <Panel expandable="false" expanded="true" headerText="HUMAN" width="100%">
+                            <forms:SimpleForm editable="true" layout="ColumnLayout">
+
+                                <Label text="Service Start" />
+                                <Input value="May 1, 2025" />
+
+                                <Label text="Service End" />
+                                <Input value="Jul 17, 2030" />
+
+                                <Label text="Due Date" />
+                                <DatePicker value="Jul 29, 2025" />
+
+                                <Label text="Account Numbe" />
+                                <DatePicker value="626264151215" />
+
+                                <Label text="Vendor Invoice" />
+                                <Input value="8484684" />
+
+                                <Label text="Total Usage" />
+                                <Input value="62,525.000 KWH" />
+
+                                <Label text="Total Usage OH" />
+                                <Input value="5,545.000 KWH" />
+
+                                <Label text="PUE Factored Usage" />
+                                <Input value="151.000 KWH" />
+
+                                <Label text="PUE Actual" />
+                                <Input value="84.000 KWH" />
+
+                                <Label text="PUE Cap" />
+                                <Input value="551.000 KWH" />
+
+                                <Label text="Total Usage Units" />
+                                <Input value="666.000 KWH" />
+
+                                <Label text="Total Charges" />
+                                <Input value="25,695.00 USD" />
+
+                            </forms:SimpleForm>
+                        </Panel> -->
+
+
+
+
+                        <OverflowToolbar >
+                            <Title text="{i18n>group2}" wrapping="true" level="H4" class="blueText sapUiTinyMarginBegin"/>
+                        </OverflowToolbar>
+                        <Panel expandable="false" expanded="true" width="100%">
+                            <forms:SimpleForm editable="true" layout="ColumnLayout">
+
+                                <Label text="Processing Status" />
+                                <Select id="statusBox" editable="{visibilityModel>/editOnly}" visible="{= ${visibilityModel>/editOnly} !== true }" selectedKey="{invoiceData>/ProcessStatus}" width="80%">
+                                    <items>
+                                        <core:Item key="{i18n>action1}" text="{i18n>action1}" />
+                                        <core:Item key="{i18n>action2}" text="{i18n>action2}" />
+                                        <core:Item key="{i18n>action3}" text="{i18n>action3}" />
+                                        <core:Item key="{i18n>action4}" text="{i18n>action4}" />
+                                        <core:Item key="{i18n>action5}" text="{i18n>action5}" />
+                                        <core:Item key="{i18n>action9}" text="{i18n>action8}" />
+                                    </items>
+                                </Select>
+
+                                <Select id="statusBox2" width="80% " visible="{= ${visibilityModel>/editOnly} === true }">
+                                    <items>
+                                        <core:Item key="{i18n>action6}" text="{i18n>action1}" />
+                                        <core:Item key="{i18n>action7}" text="{i18n>action3}" />
+                                        <core:Item key="{i18n>action8}" text="{i18n>action8}" />
+                                    </items>
+                                </Select>
+                                 <Button width="2rem" icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialogForStatus"/>
+                                            
+
+                                <Label text="Notes" />
+                                <TextArea id="notesId" value="{invoiceData>/Notes}" rows="3" editable="{visibilityModel>/editOnly}" width="80%"/>
+                                <Label id="lock" visible="false"/>
+
+                            </forms:SimpleForm>
+                        </Panel>
+
+
+                        <OverflowToolbar >
+                            <Title text="{i18n>group3}" wrapping="true" level="H4" class="blueText sapUiTinyMarginBegin"/>
+                        </OverflowToolbar>
+                        <Panel expandable="false" expanded="true" width="100%">
+                            <!-- <forms:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsM="4" columnsL="4" columnsXL="4" labelSpanM="1" labelSpanL="1" labelSpanXL="1" emptySpanM="0" emptySpanL="0" emptySpanXL="0">
+
+                                <Label text="Created By" />
+                                <Text text="{invoiceData>/CreatedByUname}" />
+
+                                <Label text="Created At" />
+                                <Text text="{ path: 'invoiceData>/CreatedAt', formatter: '.formatter.formatDateTime' }" />
+
+                                <Label text="Changed By" />
+                                <Text text="{invoiceData>/ChangedByUname}" />
+
+                                <Label text="Changed At" />
+                                <Text text="{ path: 'invoiceData>/ChangedAt', formatter: '.formatter.formatDateTime' }" />
+
+                            </forms:SimpleForm> -->
+
+                            <HBox justifyContent="SpaceBetween" alignItems="Center">
+                                <VBox>
+                                    <Label text="Created By" />
+                                    <Text text="{invoiceData>/CreatedByUname}" />
+                                </VBox>
+
+                                <VBox>
+                                    <Label text="Created At" />
+                                    <Text text="{ path: 'invoiceData>/CreatedAt', formatter: '.formatter.formatDateTime' }" />
+                                </VBox>
+
+                                <VBox>
+                                    <Label text="Changed By" />
+                                    <Text text="{invoiceData>/ChangedByUname}" />
+                                </VBox>
+
+                                <VBox>
+                                    <Label text="Changed At" />
+                                    <Text text="{ path: 'invoiceData>/ChangedAt', formatter: '.formatter.formatDateTime' }" />
+                                </VBox>
+                            </HBox>
+
+                        </Panel>
+                    </VBox>
+
+
+                </l:SplitPane>
+            </l:PaneContainer>
+        </l:ResponsiveSplitter>
+
+
+
+        <footer>
+            <OverflowToolbar>
+                <ToolbarSpacer/>
+                <Button text="{i18n>Reprocess}" icon="sap-icon://future" type="Ghost" press=".onReprocessPress" enabled="{visibilityModel>/editOnly}"/>
+                <Button text="{i18n>cancel}" type="Transparent" press=".onCancelPress" enabled="{visibilityModel>/editOnly}"/>
+                <Button id="saveBtn" text="{i18n>Save}" icon="sap-icon://save" type="Emphasized" press=".onSavePress" enabled="{visibilityModel>/editOnly}"/>
+                <Text width="32px"/>
+                <Button text="{i18n>Reject}" icon="sap-icon://decline" type="Reject" press=".onRejectPress" enabled="{visibilityModel>/editOnly}" visible="false"/>
+                <Button text="{i18n>Approve}" icon="sap-icon://accept" type="Accept" press=".onApprovePress" enabled="{visibilityModel>/editOnly}" visible="false"/>
+                <!-- <Button text="SETSTATUStoCHECKLogBtn" press="calulateIfLogPresent" /> -->
+                <!-- <Button text="Check Summasation" press="checkTotalChargesSUM"/> -->
+            </OverflowToolbar>
+        </footer>
+
+    </Page>
+</mvc:View>

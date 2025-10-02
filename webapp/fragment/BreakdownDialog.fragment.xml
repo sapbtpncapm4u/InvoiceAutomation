@@ -1,0 +1,47 @@
+<core:FragmentDefinition xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+
+	<Text text="Breakdown data not available!" visible="{ path: 'InvTotUsgBreakDownModel>/', formatter: '.formatNoDataVisible' }" class="sapUiResponsiveMargin" />
+
+	<VBox items="{InvTotUsgBreakDownModel>/}" class="sapUiTinyMarginTopBottom sapUiTinyMarginEnd">
+		<Panel expandable="true" expanded="false">
+
+			<headerToolbar>
+				<OverflowToolbar>
+					<Label text="{InvTotUsgBreakDownModel>ColocationName}" class="panelLableCSS"/>
+					<ToolbarSpacer />
+					<Text text="" visible="false"/>
+				</OverflowToolbar>
+			</headerToolbar>
+
+			<HBox wrap="Wrap" justifyContent="Start" fitContainer="true">
+				<VBox class="sapUiMediumMarginEnd">
+					<Label text="Electricty Total Usage" design="Bold"/>
+					<Text text="{InvTotUsgBreakDownModel>ElectrictyTotUsg} {InvTotUsgBreakDownModel>Electricityusageunit}" />
+				</VBox>
+				<VBox class="sapUiMediumMarginEnd">
+					<Label text="Invoice Total Charge" design="Bold"/>
+					<Text text="{InvTotUsgBreakDownModel>InvoiceTotalCharge} {InvTotUsgBreakDownModel>Currency}" />
+				</VBox>
+				<!-- <VBox >
+					<Label text="Changed By" design="Bold"/>
+					<Text text="{= ${InvTotUsgBreakDownModel>ChangedByUname} + ' (' + ${InvTotUsgBreakDownModel>ChangedBy} + ')' }" />
+				</VBox> -->
+
+			
+				<VBox class="sapUiMediumMarginEnd">
+					<Label text="PUE Actual" design="Bold"/>
+					<Text text="{InvTotUsgBreakDownModel>PueActual} {InvTotUsgBreakDownModel>Electricityusageunit}" />
+				</VBox>
+				<VBox class="sapUiMediumMarginEnd">
+					<Label text="PUE Cap" design="Bold"/>
+					<Text text="{InvTotUsgBreakDownModel>PueCap} {InvTotUsgBreakDownModel>Electricityusageunit}" />
+				</VBox>
+				<VBox class="sapUiMediumMarginEnd">
+					<Label text="PUE Factored Usage" design="Bold"/>
+					<Text text="{InvTotUsgBreakDownModel>PueFactoredUsage} {InvTotUsgBreakDownModel>Electricityusageunit}" />
+				</VBox>
+			</HBox>
+		</Panel>
+	</VBox>
+</core:FragmentDefinition>
