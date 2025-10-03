@@ -781,18 +781,16 @@
         <footer>
             <OverflowToolbar>
                 <ToolbarSpacer/>
-                <Button text="{i18n>Reprocess}" icon="sap-icon://future" type="Ghost" press=".onReprocessPress" enabled="{visibilityModel>/editOnly}"/>
-                <Button text="{i18n>cancel}" type="Transparent" press=".onCancelPress" enabled="{visibilityModel>/editOnly}"/>
                 <Button id="saveBtn" text="{i18n>Save}" icon="sap-icon://save" type="Emphasized" press=".onSavePress" enabled="{visibilityModel>/editOnly}"/>
+                <Button text="{i18n>cancel}" type="Transparent" press=".onCancelPress" enabled="{visibilityModel>/editOnly}"/>
+                 <Button text="{i18n>Reprocess}" icon="sap-icon://future" type="Ghost" press=".onReprocessPress" enabled="{visibilityModel>/editOnly}"/>
                 <Text width="32px"/>
                 <Button text="{i18n>Reject}" icon="sap-icon://decline" type="Reject" press=".onRejectPress" enabled="{visibilityModel>/editOnly}" visible="false"/>
                 <Button text="{i18n>Approve}" icon="sap-icon://accept" type="Accept" press=".onApprovePress" enabled="{visibilityModel>/editOnly}" visible="false"/>
                 <!-- <Button text="SETSTATUStoCHECKLogBtn" press="calulateIfLogPresent" /> -->
                 <!-- <Button text="Check Summasation" press="checkTotalChargesSUM"/> -->
 
-                <Button text="Save Logs" press="saveLogs" />
-
-
+                <!-- <Button text="Save Logs" press="saveLogs" /> -->
                 
             </OverflowToolbar>
         </footer>

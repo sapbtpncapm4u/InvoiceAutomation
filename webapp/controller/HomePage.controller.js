@@ -9,6 +9,7 @@ sap.ui.define([
     return Controller.extend("invoice.controller.HomePage", {
 
         selFilters: null, //To store filters selected before clicking Go
+        reprocessPayload: null,
         onInit: function () {
             this.applyData = this.applyData.bind(this);
             this.fetchData = this.fetchData.bind(this);
@@ -359,45 +360,140 @@ sap.ui.define([
 
 
         onReprocessClick: function (evt) {
-            let appUrl = sap.ui.require.toUrl("invoice");
-            let endPointUrl = `/cpi/http/Applicant`;
-            //let endPointUrl = `/cpi/http/CallInvoiceHttp`;
+            //let endPointUrl = `/cpi/http/Applicant`;
+            // var applicantPayload = {
+            //     "ASTNR": "006",
+            //     "ASTNA": "Multi",
+            //     "DISPNAME": "Check update",
+            //     "BLOCKED": "X",
+            //     "IsActiveEntity": true
+            // }
 
-            var workflowStartPayload =
-            {
-                "FacilityShortCode": "ATL20",
-                "CreatedOnBLOB": "2025-09-27T14:19:43Z",
-                "AccountNumberCirah": "21000804236",
-                "FileLink": "https://devaihubenergytransforst.blob.core.windows.net/input/2.pdf",
-                "ProcessStatus": "Extraction Started",
-                "IsActiveEntity": true
-            };
-            var applicantPayload = {
-                "ASTNR": "006",
-                "ASTNA": "Multi",
-                "DISPNAME": "Check update",
-                "BLOCKED": "X",
-                "IsActiveEntity": true
+            sap.ui.core.BusyIndicator.show(0);
+
+
+            var selList = this.getView().byId("table").getSelectedItems();
+            const invalidStatuses = new Set(["Duplicate", "Approved", "Rejected", "Validated"]);
+            const hasInvalidItem = selList.some(item => {
+                const status = item.getCells()[6].getText();
+                return invalidStatuses.has(status);
+            });
+
+            if (hasInvalidItem) {
+                sap.m.MessageBox.information("Reprocessing is not allowed for status - 'Duplicate', 'Approved', 'Rejected' and 'Validated'");
+                return;
             }
 
-            $.ajax({
-                url: appUrl + endPointUrl,
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(applicantPayload),
-                // headers: {
-                //     "Authorization": "Bearer " + yourTokenVariable
-                // },
-                async: false,
-                success: function (data) {
-                    MessageBox.information("Message has been sent to CPI");
-                },
-                error: function (err) {
-                    console.error("CPI Error:", err);
-                    MessageBox.error("Failed to send message to CPI");
-                }
+            const entityStrings = this.getView().byId("table").getSelectedContextPaths();
+            const tableBinding = this.getView().byId("table").getSelectedItems();
+            const payloads = entityStrings.map((entry, index) => {
+                const paramString = entry.substring(entry.indexOf('(') + 1, entry.lastIndexOf(')'));
+                const pairs = paramString.split(',');
+
+                const payload = {};
+
+                pairs.forEach(pair => {
+                    let [key, value] = pair.split('=');
+
+                    key = key.trim();
+
+                    // Skip the Uniqueidentifier field
+                    // if (key === 'Uniqueidentifier') return;
+
+                    // Clean and decode value
+                    value = decodeURIComponent(value.replace(/^'/, '').replace(/'$/, ''));
+                    if (value === 'true') value = true;
+                    else if (value === 'false') value = false;
+
+                    payload[key] = value;
+                });
+
+                // Add extra fields
+                payload["FileLink"] = tableBinding[index].getCells()[7].getText();
+                payload["FileDataXString"] = tableBinding[index].getCells()[8].getValue();
+                payload["ProcessStatus"] = "Extraction Started";
+
+                return payload;
             });
-        }
+
+            this.reprocessPayload = JSON.parse(JSON.stringify(payloads));
+            //console.log(this.reprocessPayload);
+            payloads.forEach(obj => {
+                delete obj.Uniqueidentifier;
+            });
+            //console.log(payloads);
+
+            let appUrl = sap.ui.require.toUrl("invoice");
+            let endPointUrl = `/cpi/http/CallInvoiceHttp`;
+
+            var that = this;
+            let allSucceeded = true;
+            for (let index = 0; index < payloads.length; index++) {
+                $.ajax({
+                    url: appUrl + endPointUrl,
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payloads[index]),
+                    async: false,
+                    success: function (data) {
+
+                    },
+                    error: function (err) {
+                        if (err.status !== 200) {
+                            allSucceeded = false;
+                            console.error("CPI Error:", err.responseText);
+                        }
+                    }
+                });
+            }
+            // Show one message at the end
+            if (allSucceeded) {
+                that.saveDataToInvoiceEntity();
+                MessageBox.information("Record(s) has been submitted to reprocess");
+            } else {
+                MessageBox.error("Some records failed to submit to CPI. Please check the console for details.");
+                sap.ui.core.BusyIndicator.hide();
+            }
+
+        },
+
+
+        saveDataToInvoiceEntity: async function () {
+            var oView = this.getView();
+           
+            for (let index = 0; index < this.reprocessPayload.length; index++) {
+                const selItem = this.reprocessPayload[index];
+
+                try {
+                    let oModel = this.getView().getModel();
+
+                    const oBindList = oModel.bindList("/ZPS_C_EINVOICE", undefined, [], [
+                        new sap.ui.model.Filter("FacilityShortCode", sap.ui.model.FilterOperator.EQ, selItem.FacilityShortCode),
+                        new sap.ui.model.Filter("Uniqueidentifier", sap.ui.model.FilterOperator.EQ, selItem.Uniqueidentifier),
+                    ]);
+
+                    const aContexts = await oBindList.requestContexts();
+
+                    if (aContexts.length === 0) {
+                        throw new Error("No data found for FacilityShortCode");
+                    }
+
+                    const oContext = aContexts[0];
+                    // Map of input IDs to model property names
+                    const fieldMappings = {
+                        Rescheduled: "Rescheduled"
+                    };
+                    // Iterate and set properties
+                    Object.entries(fieldMappings).forEach(([fieldId, property]) => {
+                        oContext.setProperty("Rescheduled", true);
+                    });
+                } catch (err) {
+                    sap.m.MessageBox.error("Update failed: " + err.message);
+                } finally {
+                    sap.ui.core.BusyIndicator.hide();
+                }
+            }
+        },
 
         // onSaveAsTile: function () {
         //     if (sap.ushell && sap.ushell.Container) {
