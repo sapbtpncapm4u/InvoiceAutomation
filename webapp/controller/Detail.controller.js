@@ -14,6 +14,7 @@ sap.ui.define([
         pageData: null,
         initialReadData: null,
         selInputForF4: null,
+        reprocessPayload: null,
         // _iSkip: 0,
         // _iTop: 100,
         // _aLoadedData: [],
@@ -1587,7 +1588,7 @@ sap.ui.define([
 
                         this.initialReadData = oContext.getObject();
 
-                         const status = oContext.getObject().ProcessStatus;
+                        const status = oContext.getObject().ProcessStatus;
                         const allowedStatuses = ["Duplicate", "Validated", "Approved", "Rejected"];
 
                         this.getView().getModel("visibilityModel").setProperty(
@@ -2103,12 +2104,6 @@ sap.ui.define([
         },
 
 
-
-
-        onReprocessPress: function () {
-            //debugger;
-        },
-
         onCancelPress: function () {
             this.resetLockToUnlock();
             const status = this.pageData.ProcessStatus;
@@ -2371,7 +2366,99 @@ sap.ui.define([
                 .finally(() => {
                     sap.ui.core.BusyIndicator.hide();
                 });
-        }
+        },
+
+
+
+
+
+
+        onReprocessPress: function (evt) {
+
+            const blockedStatuses = new Set(["Duplicate", "Approved", "Rejected", "Validated"]);
+
+            if (blockedStatuses.has(this.pageData.ProcessStatus)) {
+                sap.m.MessageBox.information(
+                    "Reprocessing is not allowed for status - 'Duplicate', 'Approved', 'Rejected' and 'Validated'"
+                );
+                return;
+            }
+
+            const payloads = [{
+                "FacilityShortCode": this.pageData.FacilityShortCode,
+                "CreatedOnBLOB": this.pageData.CreatedOnBLOB,
+                "AccountNumberCirah": this.pageData.AccountNumberCirah,
+                "FileLink": this.pageData.FileLink,
+                "FileDataXString": this.pageData.FileDataXString,
+                "ProcessStatus": "Extraction Started",
+                "IsActiveEntity": this.pageData.IsActiveEntity
+            }];
+
+            this.reprocessPayload = JSON.parse(JSON.stringify(payloads));
+            payloads.forEach(obj => {
+                delete obj.Uniqueidentifier;
+            });
+            let appUrl = sap.ui.require.toUrl("invoice");
+            let endPointUrl = `/cpi/http/CallInvoiceHttp`;
+
+            var that = this;
+            $.ajax({
+                url: appUrl + endPointUrl,
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(payloads[0]),
+                async: false,
+                success: function (data) {
+                    that.saveDataToInvoiceEntity();
+                    MessageBox.information("Record(s) has been submitted to reprocess");
+                },
+                error: function (err) {
+                    console.error("CPI Error:", err.statusText);
+                    MessageBox.error("Failed to send message to CPI");
+                }
+            });
+        },
+
+
+        saveDataToInvoiceEntity: async function () {
+            var oView = this.getView();
+
+            sap.ui.core.BusyIndicator.show(0);
+
+            let index = 0;
+            const selItem = this.reprocessPayload[index];
+            try {
+                let oModel = this.getView().getModel();
+
+                const oBindList = oModel.bindList("/ZPS_C_EINVOICE", undefined, [], [
+                    new sap.ui.model.Filter("FacilityShortCode", sap.ui.model.FilterOperator.EQ, selItem.FacilityShortCode),
+                    new sap.ui.model.Filter("Uniqueidentifier", sap.ui.model.FilterOperator.EQ, selItem.Uniqueidentifier),
+                    new sap.ui.model.Filter("CreatedOnBLOB", sap.ui.model.FilterOperator.EQ, selItem.CreatedOnBLOB),
+                    new sap.ui.model.Filter("IsActiveEntity", sap.ui.model.FilterOperator.EQ, selItem.IsActiveEntity),
+                    new sap.ui.model.Filter("AccountNumberCirah", sap.ui.model.FilterOperator.EQ, selItem.AccountNumberCirah),
+                ]);
+
+                const aContexts = await oBindList.requestContexts();
+
+                if (aContexts.length === 0) {
+                    throw new Error("No data found for FacilityShortCode");
+                }
+
+                const oContext = aContexts[0];
+                // Map of input IDs to model property names
+                const fieldMappings = {
+                    Rescheduled: "Rescheduled"
+                };
+                // Iterate and set properties
+                Object.entries(fieldMappings).forEach(([fieldId, property]) => {
+                    oContext.setProperty("Rescheduled", true);
+                });
+            } catch (err) {
+                sap.m.MessageBox.error("Update failed: " + err.message);
+            } finally {
+                sap.ui.core.BusyIndicator.hide();
+            }
+        },
 
 
 

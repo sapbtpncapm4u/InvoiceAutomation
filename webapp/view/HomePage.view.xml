@@ -74,7 +74,7 @@
                                     </fb:control>
                                 </fb:FilterGroupItem>
 
-                                 <fb:FilterGroupItem name="ProviderName" label="{i18n>ProviderName}" groupName="__basic" visibleInFilterBar="true">
+                                <fb:FilterGroupItem name="ProviderName" label="{i18n>ProviderName}" groupName="__basic" visibleInFilterBar="true">
                                     <fb:control>
                                         <MultiComboBox id="provider" selectionChange=".onSelectionChange" items="{
                                                         path: '/ZPS_C_EINVOICE',
@@ -123,7 +123,7 @@
                                 </fb:FilterGroupItem>
 
 
-                               
+
 
 
                                 <fb:FilterGroupItem name="ServiceMonth" label="{i18n>ServiceMonth}" groupName="__basic" visibleInFilterBar="true">
@@ -187,6 +187,12 @@
                             <Column>
                                 <Text text="{i18n>Status}" />
                             </Column>
+                            <Column visible="false">
+                                <Text text="FileLink" />
+                            </Column>
+                            <Column visible="false">
+                                <Text text="{i18n>FileDataXString}" />
+                            </Column>
                         </columns>
                         <items>
                             <!-- <ColumnListItem type="{= ${ProcessStatus} === 'Extraction in Progress' || ${ProcessStatus} === 'Extraction Failed' ? 'Inactive' : 'Navigation' }" press="onNavToInvoice"> -->
@@ -200,6 +206,9 @@
                                     <Text text="{ServiceMonth}" />
                                     <Text text="{CreatedOnBLOB}" />
                                     <Text text="{ProcessStatus}" />
+                                    <Text text="{FileLink}" visible="false" />
+                                    <TextArea value="{path: 'FileDataXString', targetType: 'any'}" visible="false" />
+
                                 </cells>
                             </ColumnListItem>
                         </items>
