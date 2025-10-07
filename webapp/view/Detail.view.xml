@@ -623,28 +623,28 @@
                                     <Text text="" visible="false"/>
                                 </OverflowToolbar>
                             </headerToolbar>
-                            <Table id="idInvoiceBreakdownTableTC" items="{InvTotUsgBreakDownModel>/}" width="90%" class="sapUiTinyMarginTopBottom sapUiTinyMarginEnd sapUiMediumMarginBegin" inset="false" growing="true" growingScrollToLoad="true" mode="None">
+                            <Table id="idInvoiceBreakdownTableTC" items="{InvTotUsgBreakDownModelNew>/}" width="90%" class="sapUiTinyMarginTopBottom sapUiTinyMarginEnd sapUiMediumMarginBegin" inset="false" growing="true" growingScrollToLoad="true" mode="None">
                                 <columns>
                                     <Column>
                                         <Text text="Colocation Name" />
                                     </Column>
                                     <Column>
-                                        <Text text="Invoice Total Charge CIRAH"/>
+                                        <Text text="Invoice Total Usage CIRAH"/>
                                     </Column>
                                     <Column>
-                                        <Text text="Invoice Total Charge Human"/>
+                                        <Text text="Invoice Total Usage Human"/>
                                     </Column>
                                 </columns>
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Text text="{InvTotUsgBreakDownModel>ColocationName}" />
-                                            <Text text="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeCIRAH} + ' ' + ${InvTotUsgBreakDownModel>CurrencyCirah} }"/>
+                                            <Text text="{InvTotUsgBreakDownModelNew>ColocationName}" />
+                                            <Text text="{= ${InvTotUsgBreakDownModelNew>TotalChargesCIRAH} + ' ' + ${InvTotUsgBreakDownModelNew>UoMCIRAH} }"/>
                                             <HBox>
-                                                <Text text="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeHUMAN}  + ' ' + ${InvTotUsgBreakDownModel>CurrencyHuman} }" visible="{visibilityModel>/readOnly}"/>
-                                                <Input value="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeHUMAN} }" visible="{visibilityModel>/editOnly}"/>
-                                                <Input value="{InvTotUsgBreakDownModel>CurrencyHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" visible="{visibilityModel>/editOnly}" change="UOMValidator"/>
-                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" visible="{visibilityModel>/editOnly}"/>
+                                                <Text text="{= ${InvTotUsgBreakDownModelNew>TotalChargesHuman}  + ' ' + ${InvTotUsgBreakDownModelNew>UoMHUMAN} }" visible="{visibilityModel>/readOnly}"/>
+                                                <Input value="{= ${InvTotUsgBreakDownModelNew>TotalChargesHuman} }" visible="{visibilityModel>/editOnly}"/>
+                                                <Input value="{InvTotUsgBreakDownModelNew>UoMHUMAN}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" visible="{visibilityModel>/editOnly}" change="UOMValidator"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialogForUsage" visible="{visibilityModel>/editOnly}"/>
                                             </HBox>
                                         </cells>
                                     </ColumnListItem>
@@ -680,7 +680,7 @@
                                                 <Text text="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeHUMAN}  + ' ' + ${InvTotUsgBreakDownModel>CurrencyHuman} }" visible="{visibilityModel>/readOnly}"/>
                                                 <Input value="{= ${InvTotUsgBreakDownModel>InvoiceTotalChargeHUMAN} }" visible="{visibilityModel>/editOnly}"/>
                                                 <Input value="{InvTotUsgBreakDownModel>CurrencyHuman}" showValueHelp="true" valueHelpRequest="onValueHelpPress" width="6rem" visible="{visibilityModel>/editOnly}" change="UOMValidator"/>
-                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialog" visible="{visibilityModel>/editOnly}"/>
+                                                <Button icon="sap-icon://detail-view" tooltip="View Field Log" type="Neutral" class="sapUiTinyMarginBegin" press="handleFieldLogLevelDialogForCharges" visible="{visibilityModel>/editOnly}"/>
                                             </HBox>
                                         </cells>
                                     </ColumnListItem>
@@ -790,7 +790,7 @@
                 <!-- <Button text="SETSTATUStoCHECKLogBtn" press="calulateIfLogPresent" /> -->
                 <!-- <Button text="Check Summasation" press="checkTotalChargesSUM"/> -->
 
-                <!-- <Button text="Save Logs" press="saveLogs" /> -->
+                <!-- <Button text="Save Logs" press="saveLogsForBreakdown" /> -->
                 
             </OverflowToolbar>
         </footer>

@@ -293,14 +293,19 @@ sap.ui.define([
             //this.oTable.getBinding("items").filter(aTableFilters); // for M table
             //this.oTable.getBinding("rows").filter(aTableFilters); // For Ui Tabel
 
+            const oStaticFilter = new sap.ui.model.Filter("IsActiveEntity", "EQ", true);
+            // Merge passed-in filters with static filter
+            const aCombinedFilters = [];
+            aCombinedFilters.push(...aTableFilters);
+            aCombinedFilters.push(oStaticFilter);
 
-            this.selFilters = aTableFilters;
+            this.selFilters = aCombinedFilters;
 
 
-            if (!aTableFilters.length) {
-                this.onRefresh(aTableFilters); //Go will trigger
+            if (!aCombinedFilters.length) {
+                this.onRefresh(aCombinedFilters); //Go will trigger
             } else {
-                this.oTable.getBinding("items").filter(aTableFilters, "Application");
+                this.oTable.getBinding("items").filter(aCombinedFilters, "Application");
             }
             //The "Application" filter group ensures the filter is treated as client input, not as automatic filter/sorting.
             this.oTable.setShowOverlay(false);
@@ -326,13 +331,21 @@ sap.ui.define([
             // Create sorter for FacilityShortCode (ascending)
             const oSorter = new sap.ui.model.Sorter("FacilityShortCode", false); // false = ascending
 
+              const oStaticFilter = new sap.ui.model.Filter("IsActiveEntity", "EQ", true);
+            // Merge passed-in filters with static filter
+            const aCombinedFilters = [];
+            aCombinedFilters.push(...oBindingInfo.filters);
+            aCombinedFilters.push(oStaticFilter);
+
+            this.selFilters = aCombinedFilters;
+
             // Rebind items with sorter
             oTable.bindItems({
                 path: oBindingInfo.path,
                 template: oBindingInfo.template,
                 templateShareable: oBindingInfo.templateShareable,
                 parameters: oBindingInfo.parameters,
-                filters: this.selFilters ? this.selFilters : oBindingInfo.filters,
+                filters: this.selFilters ? this.selFilters : aCombinedFilters,
                 sorters: [oSorter]
             });
 
@@ -460,7 +473,7 @@ sap.ui.define([
 
         saveDataToInvoiceEntity: async function () {
             var oView = this.getView();
-           
+
             for (let index = 0; index < this.reprocessPayload.length; index++) {
                 const selItem = this.reprocessPayload[index];
 

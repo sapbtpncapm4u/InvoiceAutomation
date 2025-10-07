@@ -15,6 +15,9 @@ sap.ui.define([
         initialReadData: null,
         selInputForF4: null,
         reprocessPayload: null,
+        initialReadBreakdownData: [],
+        initialReadBreakdownDataNew: [],
+
         // _iSkip: 0,
         // _iTop: 100,
         // _aLoadedData: [],
@@ -235,9 +238,6 @@ sap.ui.define([
                         this.getView().getModel("visibilityModel").setProperty(
                             "/showTotalUsageBreakDownNew", false
                         );
-
-
-
 
                     });
                 })
@@ -496,11 +496,16 @@ sap.ui.define([
 
 
             var isTotalChargesSame = true;
-            if (this.getView().getModel("visibilityModel").getProperty("/showTotalUsageBreakDown") || this.getView().getModel("visibilityModel").getProperty("/showTotalUsageBreakDownNew")) {
+            var isTotalUsageSame = true;
+            if (this.getView().getModel("visibilityModel").getProperty("/showTotalUsageBreakDown")) {
                 var isTotalChargesSame = this.checkTotalChargesSUM();
             }
 
-            if (iValid && isTotalChargesSame) {
+            if (this.getView().getModel("visibilityModel").getProperty("/showTotalUsageBreakDownNew")) {
+                var isTotalUsageSame = this.checkTotalChargesSUMNew();
+            }
+
+            if (iValid && isTotalChargesSame && isTotalUsageSame) {
                 let statusText = this.getView().byId("statusBox2").getSelectedItem().getText();
                 if (statusText === "Validated" || statusText === "Rejected") {
                     this.handleValidatedRejectedStatus();
@@ -509,8 +514,12 @@ sap.ui.define([
                 }
             } else {
                 var sMsg;
-                if (!isTotalChargesSame) {
+                if (!isTotalChargesSame && !isTotalUsageSame) {
+                    sMsg = "Sum of 'Invoice Total Usage Human' in breakdown must be equal to 'Total Usage Human' field\n\n Sum of 'Invoice Total Charge Human' in breakdown must be equal to 'Total Charges Human' field";
+                } else if (!isTotalChargesSame) {
                     sMsg = "Sum of 'Invoice Total Charge Human' in breakdown must be equal to 'Total Charges Human' field";
+                } else if (!isTotalUsageSame) {
+                    sMsg = "Sum of 'Invoice Total Usage Human' in breakdown must be equal to 'Total Usage Human' field";
                 } else {
                     sMsg = "Below Human fields cannot be blank:\n\n" + aInvalidFields.join("\n");
                 }
@@ -630,9 +639,14 @@ sap.ui.define([
 
 
                 this.saveLogs();
+                this.saveLogsForBreakdown();
 
                 if (this.checkTotalChargesSUM()) {
                     this.saveTotalChargeBreakDown();
+                }
+
+                if (this.checkTotalChargesSUMNew()) {
+                    this.saveTotalChargeBreakDownNew();
                 }
 
             } catch (err) {
@@ -640,7 +654,16 @@ sap.ui.define([
             } finally {
                 sap.ui.core.BusyIndicator.hide();
                 sap.m.MessageToast.show("Saved successfully");
-                this._refreshUiPageWithDBData();
+
+                function delay3Seconds(callback) {
+                    setTimeout(() => {
+                        callback();
+                    }, 3000); // 3000 milliseconds = 3 seconds
+                }
+                delay3Seconds(() => {
+                    this._refreshUiPageWithDBData();
+                });
+
             }
         },
 
@@ -797,7 +820,7 @@ sap.ui.define([
 
         onValueHelpPress: function (oEvent) {
             const oSrcPath = oEvent.getSource().getBinding("value").getPath();
-            const isUnitOfMeasure = oSrcPath === "/UnitofmeasureHuman";
+            const isUnitOfMeasure = oSrcPath === "/UnitofmeasureHuman" || oSrcPath === "UoMHUMAN";
             const dialogIndex = isUnitOfMeasure ? 0 : 1;
             const that = this;
             this.selInputForF4 = oEvent.getSource();
@@ -928,7 +951,7 @@ sap.ui.define([
         onSelectVhelp: function (evt) {
             let oInput;
             const oTitle = evt.getSource().getTitle();
-            if (oTitle === 'Currencies') {
+            if (oTitle === 'Currencies' || oTitle === 'Unit of Measures') {
                 //oInput = this.byId("currencyInput");
                 oInput = this.selInputForF4;
             } else {
@@ -1201,8 +1224,10 @@ sap.ui.define([
             let oModel = this.getView().getModel();  // OData V4 model
             sap.ui.core.BusyIndicator.show(0); // Show immediately
 
+            var entitySetName = "/ZPS_I_EINV_TOTUSAGE";
+
             // Use the path and parameters properly
-            oModel.bindList("/ZPS_I_EINV_TOTUSAGE", undefined, undefined, undefined, {
+            oModel.bindList(entitySetName, undefined, undefined, undefined, {
                 $orderby: "ColocationName asc",
                 $filter: `Invoice_UID eq '${sInvoiceUID}'`
             })
@@ -1213,6 +1238,8 @@ sap.ui.define([
                         data.push(oContext.getObject());
                     });
                     var oJSONModel = new JSONModel(data);
+                    this.initialReadBreakdownDataNew = [];
+                    this.initialReadBreakdownDataNew.push(data);
                     this.getView().setModel(oJSONModel, "InvTotUsgBreakDownModel");
                     if (refresh) {
                         return;
@@ -1259,6 +1286,59 @@ sap.ui.define([
         },
 
 
+        detailLevelBreakDownNew: function (sInvoiceUID, refresh, sFieldName) {
+            let oModel = this.getView().getModel();  // OData V4 model
+            sap.ui.core.BusyIndicator.show(0); // Show immediately
+
+            var entitySetName = "/ZPS_I_EINV_TOTCHARGES";
+
+            // Use the path and parameters properly
+            oModel.bindList(entitySetName, undefined, undefined, undefined, {
+                $orderby: "ColocationName asc",
+                $filter: `Invoice_UID eq '${sInvoiceUID}'`
+            })
+                .requestContexts()
+                .then((aContexts) => {
+                    let data = [];
+                    aContexts.forEach(oContext => {
+                        data.push(oContext.getObject());
+                    });
+                    var oJSONModel = new JSONModel(data);
+                    this.initialReadBreakdownData = [];
+                    this.initialReadBreakdownData.push(data);
+                    this.getView().setModel(oJSONModel, "InvTotUsgBreakDownModelNew");
+                    if (refresh) {
+                        return;
+                    } else if (!data.length) {
+                        if (sFieldName === "totalUsage") {
+                            sap.m.MessageToast.show("Total Usage Breakdown not avaialble");
+                        } else {
+                            sap.m.MessageToast.show("Total Charges Breakdown not avaialble");
+                        }
+                    } else {
+                        if (sFieldName === "totalUsage") {
+                            this.getView().getModel("visibilityModel").setProperty(
+                                "/showTotalUsageBreakDownNew", true
+                            );
+                        } else {
+                            this.getView().getModel("visibilityModel").setProperty(
+                                "/showTotalUsageBreakDown", true
+                            );
+                        }
+                    }
+                })
+                .catch((err) => {
+                    console.error("Data load error:", err);
+                })
+                .finally(() => {
+                    sap.ui.core.BusyIndicator.hide(); // Always hide, success or error
+                    if (this.oFieldLevelDialog) {
+                        this.oFieldLevelDialog.setBusy(false);
+                    }
+                });
+        },
+
+
         openTotalUsageDetailedBreakdownDialog: function (oEvent) {
             const oButton = oEvent.getSource();
             const oView = this.getView();
@@ -1282,6 +1362,7 @@ sap.ui.define([
 
 
             this.detailLevelBreakDown(sInvoiceUID, false, sFieldName);
+            this.detailLevelBreakDownNew(sInvoiceUID, false, sFieldName);
 
             // if (!this.oBreakdownDialog) {
             //     // Load the fragment (XML) and then embed it into the dialog
@@ -1602,6 +1683,7 @@ sap.ui.define([
                         let match = this.sPath.match(/Uniqueidentifier='([^']+)'/);
                         let sInvoiceUID = match ? match[1] : null;
                         this.detailLevelBreakDown(sInvoiceUID, true); //Read breakdown
+                        this.detailLevelBreakDownNew(sInvoiceUID, true); //Read breakdown
 
 
                     });
@@ -1923,7 +2005,15 @@ sap.ui.define([
             } finally {
                 sap.ui.core.BusyIndicator.hide();
                 sap.m.MessageToast.show("Approved");
-                this._refreshUiPageWithDBData();
+
+                function delay3Seconds(callback) {
+                    setTimeout(() => {
+                        callback();
+                    }, 3000); // 3000 milliseconds = 3 seconds
+                }
+                delay3Seconds(() => {
+                    this._refreshUiPageWithDBData();
+                });
             }
         },
 
@@ -2129,6 +2219,35 @@ sap.ui.define([
 
 
 
+        // checkTotalChargesSUM: function () {
+        //     const vModel = this.getView().getModel("visibilityModel");
+        //     if (vModel.getProperty("/showTotalUsageBreakDown")) {
+        //         var oItms = this.getView().byId("idInvoiceBreakdownTable").getItems();
+        //         var total = 0;
+        //         if (oItms.length) {
+        //             for (let index = 0; index < oItms.length; index++) {
+        //                 var cellValue = oItms[index].getCells()[2].getItems()[1].getValue();
+        //                 total += parseFloat(cellValue) || 0;
+        //             }
+        //         }
+        //         var totalCargesHumanField = parseFloat(this.getView().byId("scanField12").getValue()) || 0;
+        //         return total === totalCargesHumanField;
+
+        //     } else { //showTotalUsageBreakDownNew
+
+        //         var oItms = this.getView().byId("idInvoiceBreakdownTableTC").getItems();
+        //         var total = 0;
+        //         if (oItms.length) {
+        //             for (let index = 0; index < oItms.length; index++) {
+        //                 var cellValue = oItms[index].getCells()[2].getItems()[1].getValue();
+        //                 total += parseFloat(cellValue) || 0;
+        //             }
+        //         }
+        //         var totalCargesHumanFieldNew = parseFloat(this.getView().byId("scanField6").getValue()) || 0;
+        //         return total === totalCargesHumanFieldNew;
+        //     }
+        // },
+
         checkTotalChargesSUM: function () {
             var oItms = this.getView().byId("idInvoiceBreakdownTable").getItems();
             var total = 0;
@@ -2143,10 +2262,24 @@ sap.ui.define([
         },
 
 
+        checkTotalChargesSUMNew: function () {
+            var oItms = this.getView().byId("idInvoiceBreakdownTableTC").getItems();
+            var total = 0;
+            if (oItms.length) {
+                for (let index = 0; index < oItms.length; index++) {
+                    var cellValue = oItms[index].getCells()[2].getItems()[1].getValue();
+                    total += parseFloat(cellValue) || 0;
+                }
+            }
+            var totalCargesHumanFieldNew = parseFloat(this.getView().byId("scanField6").getValue()) || 0;
+            return total === totalCargesHumanFieldNew;
+        },
+
+
 
         saveTotalChargeBreakDown: async function () {
             const oModel = this.getView().getModel(); // OData V4 model
-            const groupId = "updateGroup";
+            const groupId = "updateColoGroup";
 
             // function buildPayload() {
             //     return [
@@ -2284,8 +2417,77 @@ sap.ui.define([
 
 
 
+        saveTotalChargeBreakDownNew: async function () {
+            const oModel = this.getView().getModel(); // OData V4 model
+            const groupId = "updateColoGroup";
 
+            function buildPayload(oTable) {
+                const aPayload = [];
 
+                const aItems = oTable.getItems();
+
+                aItems.forEach(oItem => {
+                    const aCells = oItem.getCells();
+                    const oHBox = aCells[2]; // HBox in 3rd column
+
+                    const oTextColoName = aCells[0]; // Text control
+                    const oInputChargeHuman = oHBox.getItems()[1]; // Input for InvoiceTotalChargeHUMAN
+                    const oInputCurrencyHuman = oHBox.getItems()[2]; // Input for CurrencyHuman
+
+                    const oContext = oItem.getBindingContext("InvTotUsgBreakDownModelNew");
+                    const oData = oContext.getObject();
+
+                    aPayload.push({
+                        IndividualColoId: oData.IndividualColoId,
+                        ColocationName: oTextColoName.getText(), // or oData.ColocationName
+                        UoMHUMAN: oInputCurrencyHuman.getValue(),
+                        TotalChargesHuman: oInputChargeHuman.getValue(),
+                        Invoice_UID: oData.Invoice_UID
+                    });
+                });
+
+                return aPayload;
+            }
+
+            const oTable = this.getView().byId("idInvoiceBreakdownTableTC");
+            const aLogPayload = buildPayload(oTable);
+
+            try {
+                for (const entry of aLogPayload) {
+                    const sKey = encodeURIComponent(entry.IndividualColoId);
+                    const sPath = `/ZPS_I_EINV_TOTCHARGES('${sKey}')`;
+
+                    const oBinding = oModel.bindContext(sPath, null, {
+                        $$updateGroupId: groupId
+                    });
+
+                    try {
+                        await oBinding.requestObject(); // Load entity
+
+                        const oContext = oBinding.getBoundContext();
+
+                        if (!oContext) {
+                            throw new Error("No context found for path: " + sPath);
+                        }
+
+                        // Set properties one by one (excluding the key)
+                        for (const [prop, val] of Object.entries(entry)) {
+                            if (prop !== "IndividualColoId") {
+                                oContext.setProperty(prop, val);
+                            }
+                        }
+                        console.log("Properties set for update:", entry.IndividualColoId);
+                    } catch (patchErr) {
+                        // Entity not found, fallback to create
+                        console.log("Entity not found, u should try create for:", sPath);
+                    }
+                }
+                await oModel.submitBatch(groupId); // Commit all updates/creates
+            } catch (err) {
+                console.error("Save failed:", err);
+                sap.m.MessageBox.error("Save failed: " + err.message);
+            }
+        },
 
 
 
@@ -2461,6 +2663,220 @@ sap.ui.define([
         },
 
 
+
+        /*For Saving Logs for Break Down*/
+        saveLogsForBreakdown: async function () {
+
+            const initialData = [...this.initialReadBreakdownData, ...this.initialReadBreakdownDataNew];
+            const initialDataFlat = initialData.flat();
+
+            var newTC = this.getView().byId("idInvoiceBreakdownTableTC");
+            var totChTable = this.getView().byId("idInvoiceBreakdownTable");
+
+            var data1 = [];
+            for (let index = 0; index < newTC.getItems().length; index++) {
+                const element = newTC.getItems()[index];
+                let valA = element.getCells()[2].getItems()[1].getValue();
+                let uomA = element.getCells()[2].getItems()[2].getValue();
+                let coloA = element.getCells()[0].getText();
+                data1.push(valA + " " + uomA + " " + "against" + " " + coloA);
+            }
+
+            var data2 = [];
+            for (let index = 0; index < totChTable.getItems().length; index++) {
+                const element = totChTable.getItems()[index];
+                let valB = element.getCells()[2].getItems()[1].getValue();
+                let currB = element.getCells()[2].getItems()[2].getValue();
+                let coloB = element.getCells()[0].getText();
+                data2.push(valB + " " + currB + " " + "against" + " " + coloB);
+            }
+
+            const chnagedData = [...data1, ...data2];
+            const chnagedDataFlat = chnagedData.flat();
+
+
+            var aLogPayload = this.findChanges(initialDataFlat, chnagedDataFlat);
+            console.log(aLogPayload);
+
+            // Step 4: POst the log to BAckend
+            try {
+                const oBindList = this.getView().getModel().bindList("/ZPS_I_EINV_LOG");
+                // POST each entry
+                for (const entry of aLogPayload) {
+                    await oBindList.create(entry);
+                }
+                sap.m.MessageToast.show("Change log saved successfully.");
+            } catch (err) {
+                sap.m.MessageBox.error("Save failed: " + err.message);
+            }
+
+            // Ensure the model is not in a dirty/failed state before calling bindList
+            await this.getView().getModel().resetChanges("updateGroup");  // or "$auto"
+        },
+
+
+        findChanges: function (initialData, compareArray) {
+            const changes = [];
+            const seen = new Set(); // to avoid duplicates for ColocationName+IndividualColoId
+
+            // Helper to parse "value unit against ColocationName"
+            function parseCompareStr(str) {
+                const parts = str.split(" against ");
+                if (parts.length !== 2) return null;
+                const [valueUnit, colocation] = parts;
+
+                const [value, ...unitParts] = valueUnit.trim().split(" ");
+                return {
+                    value: value.trim(),
+                    unit: unitParts.join(" ").trim(),
+                    colocation: colocation.trim()
+                };
+            }
+
+            compareArray.forEach(compareStr => {
+                const parsed = parseCompareStr(compareStr);
+                if (!parsed) return;
+
+                const { value, unit, colocation } = parsed;
+
+                // Find matching record
+                const record = initialData.find(r => r.ColocationName === colocation);
+                if (!record) return;
+
+                const uniqueKey = `${record.ColocationName}_${record.IndividualColoId}`;
+                if (seen.has(uniqueKey)) return; // skip if already processed
+                seen.add(uniqueKey);
+
+                // Decide which field pair to check
+                if (record.TotalChargesHuman !== undefined && record.UoMHUMAN !== undefined) {
+                    if (record.TotalChargesHuman !== value || record.UoMHUMAN !== unit) {
+                        changes.push({
+                            Invoice_UID: record.Invoice_UID,
+                            //  ColocationName: record.ColocationName,
+                            IndividualColoId: record.IndividualColoId,
+                            FieldName: "Invoice Total Usage Human",
+                            OldValue: `${record.TotalChargesHuman.toFixed(2)} ${record.UoMHUMAN}`,
+                            NewValue: `${value} ${unit}`,
+                            ChangeReason: "Fixed Text"
+                        });
+                    }
+                } else if (
+                    record.InvoiceTotalChargeHUMAN !== undefined &&
+                    record.CurrencyHuman !== undefined
+                ) {
+                    if (record.InvoiceTotalChargeHUMAN !== value || record.CurrencyHuman !== unit) {
+                        changes.push({
+                            Invoice_UID: record.Invoice_UID,
+                            // ColocationName: record.ColocationName,
+                            IndividualColoId: record.IndividualColoId,
+                            FieldName: "Invoice Total Charge Human",
+                            OldValue: `${record.InvoiceTotalChargeHUMAN.toFixed(2)} ${record.CurrencyHuman}`,
+                            NewValue: `${value} ${unit}`,
+                            ChangeReason: "Fixed Text"
+                        });
+                    }
+                }
+            });
+
+            return changes;
+        },
+
+
+
+        handleFieldLogLevelDialogForUsage: function (oEvent) {
+            const oView = this.getView();
+            const oButton = this.getView().byId("statusBox2");
+            var sTitle = "Invoice Total Usage Human";
+            let sFieldName = "Invoice Total Usage Human";
+
+            // Use RegEx to match Uniqueidentifier
+            let match = this.sPath.match(/Uniqueidentifier='([^']+)'/);
+            let sInvoiceUID = match ? match[1] : null;
+
+
+            this.fetchFieldLevelLogDetails(sInvoiceUID, sFieldName);
+            //this.fetchFieldLevelLogDetails("EAA41537-3C57-1FD0-9A8A-F4173D2B9E76", "PUE_CAP_HUMAN");
+
+            if (!this.oFieldLevelDialog) {
+                // Load the fragment (XML) and then embed it into the dialog
+                Fragment.load({
+                    id: oView.getId(),
+                    name: "invoice.fragment.FieldLevelLogDialog",
+                    controller: this
+                }).then(function (oFragmentContent) {
+                    var oModel = this.getView().getModel("fieldLogModel");
+                    // Create Dialog and set fragment as content
+                    this.oFieldLevelDialog = new sap.m.Dialog({
+                        title: "Logs for " + sTitle,
+                        content: [oFragmentContent],
+                        contentWidth: "400px",
+                        contentHeight: "350px",
+                        resizable: true,
+                        endButton: new sap.m.Button({
+                            text: "Close",
+                            press: function () {
+                                this.oFieldLevelDialog.close();
+                            }.bind(this)
+                        })
+                    });
+                    oView.addDependent(this.oFieldLevelDialog);
+                    //this.oFieldLevelDialog.setBusy(true);
+                }.bind(this));
+
+            } else {
+                // Update title dynamically if dialog already exists
+                this.oFieldLevelDialog.setTitle("Logs for " + sTitle);
+                //this.oFieldLevelDialog.setBusy(true);
+            }
+        },
+
+
+        handleFieldLogLevelDialogForCharges: function (oEvent) {
+            const oView = this.getView();
+            const oButton = this.getView().byId("statusBox2");
+            var sTitle = "Invoice Total Charge Human";
+            let sFieldName = "Invoice Total Charge Human";
+
+            // Use RegEx to match Uniqueidentifier
+            let match = this.sPath.match(/Uniqueidentifier='([^']+)'/);
+            let sInvoiceUID = match ? match[1] : null;
+
+
+            this.fetchFieldLevelLogDetails(sInvoiceUID, sFieldName);
+            //this.fetchFieldLevelLogDetails("EAA41537-3C57-1FD0-9A8A-F4173D2B9E76", "PUE_CAP_HUMAN");
+
+            if (!this.oFieldLevelDialog) {
+                // Load the fragment (XML) and then embed it into the dialog
+                Fragment.load({
+                    id: oView.getId(),
+                    name: "invoice.fragment.FieldLevelLogDialog",
+                    controller: this
+                }).then(function (oFragmentContent) {
+                    var oModel = this.getView().getModel("fieldLogModel");
+                    // Create Dialog and set fragment as content
+                    this.oFieldLevelDialog = new sap.m.Dialog({
+                        title: "Logs for " + sTitle,
+                        content: [oFragmentContent],
+                        contentWidth: "400px",
+                        contentHeight: "350px",
+                        resizable: true,
+                        endButton: new sap.m.Button({
+                            text: "Close",
+                            press: function () {
+                                this.oFieldLevelDialog.close();
+                            }.bind(this)
+                        })
+                    });
+                    oView.addDependent(this.oFieldLevelDialog);
+                    //this.oFieldLevelDialog.setBusy(true);
+                }.bind(this));
+
+            } else {
+                // Update title dynamically if dialog already exists
+                this.oFieldLevelDialog.setTitle("Logs for " + sTitle);
+                //this.oFieldLevelDialog.setBusy(true);
+            }
+        }
 
 
 
